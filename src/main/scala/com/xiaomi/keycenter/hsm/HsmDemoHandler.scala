@@ -52,9 +52,7 @@ class HsmDemoHandler extends HttpServiceActor {
           val service = injector.getInstance(classOf[DemoService])
           complete(StringUtils.join(service.listRootKeys(), "\r\n") + "\r\n")
         }
-      }
-    } ~ get {
-      path("test1") {
+      } ~ path("test1") {
         respondWithMediaType(`text/plain`) {
           val service = injector.getInstance(classOf[DemoService])
           service.generateRootKey("xxx")
