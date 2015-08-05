@@ -1,5 +1,6 @@
 package com.xiaomi.keycenter.hsm
 
+import com.google.common.base.Charsets
 import com.google.common.io.BaseEncoding
 import com.google.gson.Gson
 import com.google.inject.Guice
@@ -30,8 +31,8 @@ class HsmDemoHandler extends HttpServiceActor {
     }
 
   val route = {
-    post {
-      path("rk") {
+    get {
+      path("generateRootKey") {
         parameter('alias) { alias =>
           respondWithMediaType(`text/plain`) {
             val service = injector.getInstance(classOf[DemoService])
@@ -46,10 +47,22 @@ class HsmDemoHandler extends HttpServiceActor {
         }
       }
     } ~ get {
-      path("rk_list") {
+      path("listRootKeys") {
         respondWithMediaType(`text/plain`) {
           val service = injector.getInstance(classOf[DemoService])
           complete(StringUtils.join(service.listRootKeys(), "\r\n") + "\r\n")
+        }
+      }
+    } ~ get {
+      path("test1") {
+        respondWithMediaType(`text/plain`) {
+          val service = injector.getInstance(classOf[DemoService])
+          service.generateRootKey("xxx")
+          val cipher = service.encrypt("xxx", "123".getBytes(Charsets.UTF_8))
+          val raw = new String(service.decrypt("xxx", cipher), Charsets.UTF_8)
+          complete(
+            raw + "\r\n"
+          )
         }
       }
     }
