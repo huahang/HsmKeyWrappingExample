@@ -2,6 +2,7 @@ package com.xiaomi.keycenter.hsm;
 
 import com.google.inject.Singleton;
 import com.safenetinc.luna.LunaSlotManager;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -36,6 +37,7 @@ public class HsmDemoService implements DemoService {
     HsmDemoService() {
         try {
             Security.addProvider(new com.safenetinc.luna.provider.LunaProvider());
+            Security.addProvider(new BouncyCastleProvider());
             LunaSlotManager slotManager = LunaSlotManager.getInstance();
             Properties prop = new Properties();
             File propFile = new File(System.getProperty("user.home"), "partition.properties");

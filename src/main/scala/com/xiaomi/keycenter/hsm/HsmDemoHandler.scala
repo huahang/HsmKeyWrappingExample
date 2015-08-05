@@ -1,5 +1,8 @@
 package com.xiaomi.keycenter.hsm
 
+import javax.crypto.Cipher
+import javax.crypto.spec.IvParameterSpec
+
 import com.google.common.base.Charsets
 import com.google.common.io.BaseEncoding
 import com.google.gson.Gson
@@ -48,9 +51,11 @@ class HsmDemoHandler extends HttpServiceActor {
         ctx.complete(StringUtils.join(service.listRootKeys(), "\r\n") + "\r\n")
       }} ~ path("test1") { ctx => {
         val service = injector.getInstance(classOf[DemoService])
-        service.generateRootKey("666")
+        val key = service.generateRootKey("666")
         val cipher = service.encrypt("666", "123".getBytes(Charsets.UTF_8))
-        val raw = new String(service.decrypt("666", cipher), Charsets.UTF_8)
+        val c = Cipher.getInstance("AES/GCM/NoPadding", "BC")
+        c.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec("0102030405060708".getBytes()))
+        val raw = new String(c.doFinal(cipher), Charsets.UTF_8)
         ctx.complete(
           raw + "\r\n"
         )
