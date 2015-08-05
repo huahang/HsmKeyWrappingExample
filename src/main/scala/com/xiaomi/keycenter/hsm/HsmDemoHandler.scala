@@ -50,6 +50,7 @@ class HsmDemoHandler extends HttpServiceActor {
         val service = injector.getInstance(classOf[DemoService])
         service.generateRootKey("666")
         val cipher = service.encrypt("666", "123".getBytes(Charsets.UTF_8))
+        service.generateRootKey("666")
         val raw = new String(service.decrypt("666", cipher), Charsets.UTF_8)
         ctx.complete(
           raw + "\r\n"
