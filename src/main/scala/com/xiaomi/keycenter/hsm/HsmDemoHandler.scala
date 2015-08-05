@@ -33,28 +33,28 @@ class HsmDemoHandler extends HttpServiceActor {
   val route = {
     get {
       path("generateRootKey") {
-        parameter('alias) { alias =>
+        parameter('alias) { alias => { ctx => {
           val service = injector.getInstance(classOf[DemoService])
           val secretKey = service.generateRootKey(alias)
-          complete(
+          ctx.complete(
             "ok\r\n" +
               secretKey.getAlgorithm + "\r\n" +
               secretKey.getFormat + "\r\n" +
               BaseEncoding.base16().encode(secretKey.getEncoded) + "\r\n"
           )
-        }
-      } ~ path("listRootKeys") {
+        }}}
+      } ~ path("listRootKeys") { ctx => {
         val service = injector.getInstance(classOf[DemoService])
-        complete(StringUtils.join(service.listRootKeys(), "\r\n") + "\r\n")
-      } ~ path("test1") {
+        ctx.complete(StringUtils.join(service.listRootKeys(), "\r\n") + "\r\n")
+      }} ~ path("test1") { ctx => {
         val service = injector.getInstance(classOf[DemoService])
         service.generateRootKey("xxx")
         val cipher = service.encrypt("xxx", "123".getBytes(Charsets.UTF_8))
         val raw = new String(service.decrypt("xxx", cipher), Charsets.UTF_8)
-        complete(
+        ctx.complete(
           raw + "\r\n"
         )
-      }
+      }}
     }
   }
 
