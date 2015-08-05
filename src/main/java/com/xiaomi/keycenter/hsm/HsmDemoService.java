@@ -2,6 +2,7 @@ package com.xiaomi.keycenter.hsm;
 
 import com.google.inject.Singleton;
 import com.safenetinc.luna.LunaSlotManager;
+import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.BadPaddingException;
@@ -11,18 +12,25 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Security;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.spec.ECPublicKeySpec;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -59,6 +67,17 @@ public class HsmDemoService implements DemoService {
             System.exit(-1);
         } finally {
         }
+    }
+
+    @Override
+    public KeyPair generateRootKeyPair(String alias) throws NoSuchProviderException, NoSuchAlgorithmException, CertificateException, KeyStoreException {
+        KeyPairGenerator g = KeyPairGenerator.getInstance("RSA", "LunaProvider");
+        g.initialize(1024);
+        KeyPair keyPair = g.generateKeyPair();
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        Certificate cert = cf.generateCertificate(new ByteArrayInputStream(keyPair.getPublic().getEncoded()));
+        keyStore.setKeyEntry(alias, keyPair.getPrivate(), null, ArrayUtils.addAll(null, cert));
+        return keyPair;
     }
 
     @Override
