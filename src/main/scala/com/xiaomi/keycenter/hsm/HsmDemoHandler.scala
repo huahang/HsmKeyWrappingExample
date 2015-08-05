@@ -32,10 +32,10 @@ class HsmDemoHandler extends HttpServiceActor {
     post {
       path("rk") {
         parameter('alias) { alias =>
-          respondWithMediaType(`application/json`) {
+          respondWithMediaType(`text/plain`) {
             val service = injector.getInstance(classOf[DemoService])
             service.generateRootKey(alias)
-            complete("{}")
+            complete("ok\r\n")
           }
         }
       }
@@ -43,7 +43,7 @@ class HsmDemoHandler extends HttpServiceActor {
       path("rk_list") {
         respondWithMediaType(`text/plain`) {
           val service = injector.getInstance(classOf[DemoService])
-          complete(StringUtils.join(service.listRootKeys(), "\r\n"))
+          complete(StringUtils.join(service.listRootKeys(), "\r\n") + "\r\n")
         }
       }
     }
