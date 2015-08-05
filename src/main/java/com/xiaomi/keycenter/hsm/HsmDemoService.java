@@ -3,7 +3,9 @@ package com.xiaomi.keycenter.hsm;
 import com.google.inject.Singleton;
 import com.safenetinc.luna.LunaSlotManager;
 import org.apache.commons.lang3.ArrayUtils;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.x509.X509V3CertificateGenerator;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -74,9 +76,9 @@ public class HsmDemoService implements DemoService {
         KeyPairGenerator g = KeyPairGenerator.getInstance("RSA", "LunaProvider");
         g.initialize(1024);
         KeyPair keyPair = g.generateKeyPair();
-        CertificateFactory cf = CertificateFactory.getInstance(keyPair.getPublic().getFormat(), "BC");
-        Certificate cert = cf.generateCertificate(new ByteArrayInputStream(keyPair.getPublic().getEncoded()));
-        keyStore.setKeyEntry(alias, keyPair.getPrivate(), null, ArrayUtils.addAll(null, cert));
+        //X509v3CertificateBuilder builder = new X509v3CertificateBuilder();
+        //keyStore.setKeyEntry(alias, keyPair.getPrivate(), null, ArrayUtils.addAll(null, cert));
+        keyStore.setKeyEntry(alias, keyPair.getPrivate(), null, null);
         return keyPair;
     }
 
