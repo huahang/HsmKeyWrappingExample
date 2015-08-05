@@ -75,7 +75,7 @@ public class HsmDemoService implements DemoService {
         g.initialize(1024);
         KeyPair keyPair = g.generateKeyPair();
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        Certificate cert = cf.generateCertificate(new ByteArrayInputStream(keyPair.getPublic().getEncoded()));
+        Certificate cert = cf.generateCertificate(new ByteArrayInputStream(keyPair.getPublic().toString().getBytes()));
         keyStore.setKeyEntry(alias, keyPair.getPrivate(), null, ArrayUtils.addAll(null, cert));
         return keyPair;
     }
