@@ -76,6 +76,7 @@ public class HsmDemoService implements DemoService {
         KeyPairGenerator g = KeyPairGenerator.getInstance("RSA", "LunaProvider");
         g.initialize(1024);
         KeyPair keyPair = g.generateKeyPair();
+        // http://www.bouncycastle.org/wiki/display/JA1/X.509+Public+Key+Certificate+and+Certification+Request+Generation
         //X509v3CertificateBuilder builder = new X509v3CertificateBuilder();
         //keyStore.setKeyEntry(alias, keyPair.getPrivate(), null, ArrayUtils.addAll(null, cert));
         keyStore.setKeyEntry(alias, keyPair.getPrivate(), null, null);
