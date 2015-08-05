@@ -23,29 +23,27 @@ class HsmDemoHandler extends HttpServiceActor {
         log.error(e, "Hit an error: " + ExceptionUtils.getStackTrace(e))
         sender() ! HttpResponse(
           status = 500,
-          entity = ExceptionUtils.getMessage(e) + "\r\n"
+          entity = ExceptionUtils.getMessage(e) + "\n"
         )
       }
     }
 
   val route = {
-    path("rk") {
-      post {
-        path("") {
-          parameter('alias) { alias =>
-            respondWithMediaType(`application/json`) {
-              val service = injector.getInstance(classOf[DemoService])
-              service.generateRootKey(alias)
-              complete("{}\r\n")
-            }
+    post {
+      path("rk") {
+        parameter('alias) { alias =>
+          respondWithMediaType(`application/json`) {
+            val service = injector.getInstance(classOf[DemoService])
+            service.generateRootKey(alias)
+            complete("{}")
           }
         }
-      } ~ get {
-        path("list") {
-          respondWithMediaType(`text/plain`) {
-            val service = injector.getInstance(classOf[DemoService])
-            complete(StringUtils.join(service.listRootKeys(), "\r\n") + "\r\n")
-          }
+      }
+    } ~ get {
+      path("rk_list") {
+        respondWithMediaType(`text/plain`) {
+          val service = injector.getInstance(classOf[DemoService])
+          complete(StringUtils.join(service.listRootKeys(), "\r\n"))
         }
       }
     }
