@@ -1,4 +1,4 @@
-package to.noc.hsm.lunasa.example;
+package com.xiaomi.keycenter.hsm.samplecode;
 
 import com.safenetinc.luna.LunaSlotManager;
 
@@ -84,5 +84,4 @@ public class HsmManager {
     public static void setSecretKeysExtractable(boolean isExtractable) {
         slotManager.setSecretKeysExtractable(isExtractable);
     }
-    
 }

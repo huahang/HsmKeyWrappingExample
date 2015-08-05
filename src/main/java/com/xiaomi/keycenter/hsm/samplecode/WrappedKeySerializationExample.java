@@ -1,4 +1,4 @@
-package to.noc.hsm.lunasa.example;
+package com.xiaomi.keycenter.hsm.samplecode;
 
 import com.google.common.primitives.Bytes;
 import com.safenetinc.luna.LunaUtils;
