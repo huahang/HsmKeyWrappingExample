@@ -47,6 +47,7 @@ public class HsmDemoService implements DemoService {
                 System.exit(-1);
             }
             slotManager.login(partitionName, partitionPass);
+            slotManager.setSecretKeysExtractable(true);
             keyStore = KeyStore.getInstance("Luna");
             keyStore.load(null, null);
         } catch (Exception e) {
@@ -67,6 +68,8 @@ public class HsmDemoService implements DemoService {
 
     @Override
     public List<String> listRootKeys() throws KeyStoreException {
-        return Collections.list(keyStore.aliases());
+        List<String> aliasList = Collections.list(keyStore.aliases());
+        Collections.sort(aliasList);
+        return aliasList;
     }
 }

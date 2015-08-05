@@ -1,5 +1,6 @@
 package com.xiaomi.keycenter.hsm
 
+import com.google.common.io.BaseEncoding
 import com.google.gson.Gson
 import com.google.inject.Guice
 import org.apache.commons.lang3.StringUtils
@@ -34,8 +35,13 @@ class HsmDemoHandler extends HttpServiceActor {
         parameter('alias) { alias =>
           respondWithMediaType(`text/plain`) {
             val service = injector.getInstance(classOf[DemoService])
-            service.generateRootKey(alias)
-            complete("ok\r\n")
+            val secretKey = service.generateRootKey(alias)
+            complete(
+              "ok\r\n" +
+                secretKey.getAlgorithm + "\r\n" +
+                secretKey.getFormat + "\r\n" +
+                BaseEncoding.base16().encode(secretKey.getEncoded) + "\r\n"
+            )
           }
         }
       }
