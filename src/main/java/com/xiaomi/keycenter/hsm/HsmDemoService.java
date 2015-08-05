@@ -74,7 +74,7 @@ public class HsmDemoService implements DemoService {
         KeyPairGenerator g = KeyPairGenerator.getInstance("RSA", "LunaProvider");
         g.initialize(1024);
         KeyPair keyPair = g.generateKeyPair();
-        CertificateFactory cf = CertificateFactory.getInstance("X.509", "LunaProvider");
+        CertificateFactory cf = CertificateFactory.getInstance(keyPair.getPrivate().getFormat(), "BC");
         Certificate cert = cf.generateCertificate(new ByteArrayInputStream(keyPair.getPublic().getEncoded()));
         keyStore.setKeyEntry(alias, keyPair.getPrivate(), null, ArrayUtils.addAll(null, cert));
         return keyPair;
