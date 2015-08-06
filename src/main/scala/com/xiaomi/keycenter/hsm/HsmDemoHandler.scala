@@ -154,15 +154,14 @@ class HsmDemoHandler extends HttpServiceActor {
         )
       }} ~ path("test4") { ctx => {
         val service = injector.getInstance(classOf[DemoService])
-
         val data = "hello, world!".getBytes(Charsets.UTF_8)
-
-        val keyGenerator = KeyGenerator.getInstance("AES", "BC")
-        keyGenerator.init(256)
-        val bcSecretKey = keyGenerator.generateKey()
-
         val keyFactory = SecretKeyFactory.getInstance("AES", "LunaProvider")
-        val secretKey = keyFactory.generateSecret(new SecretKeySpec(bcSecretKey.getEncoded, bcSecretKey.getAlgorithm))
+        val secretKey = keyFactory.generateSecret(
+          new SecretKeySpec(
+            BaseEncoding.base16().decode("DC4EA62FEC88B2A5B1F87D76940CBB9125EC99CFB96DAA683036D8166AAEA760"),
+            "AES"
+          )
+        )
         val encryptCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
         encryptCipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec("0102030405060708".getBytes))
         val cipher = encryptCipher.doFinal(data)
