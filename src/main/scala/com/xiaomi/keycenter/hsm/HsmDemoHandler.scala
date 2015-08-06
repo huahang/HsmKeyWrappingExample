@@ -1,7 +1,8 @@
 package com.xiaomi.keycenter.hsm
 
 import java.io.ByteArrayInputStream
-import java.security.{Signature, PrivateKey}
+import java.security.spec.ECGenParameterSpec
+import java.security.{KeyPairGenerator, Signature, PrivateKey}
 import java.security.cert.CertificateFactory
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
@@ -138,6 +139,51 @@ class HsmDemoHandler extends HttpServiceActor {
           "ok" + "\r\n" +
             "sign: " + BaseEncoding.base16().encode(sign) + "\r\n" +
             "good: " + good + "\r\n"
+        )
+      }} ~ path("test4") { ctx => {
+        val service = injector.getInstance(classOf[DemoService])
+
+        val data = "hello, world!".getBytes(Charsets.UTF_8)
+
+        val kekPublicKey = service.getRootCertificate("root_rsa2048_01_cert").getPublicKey
+        val kekPrivateKey = service.getRootKey("root_rsa2048_01_priv").asInstanceOf[PrivateKey]
+
+        val lunaWrapCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding", "LunaProvider")
+        lunaWrapCipher.init(Cipher.WRAP_MODE, kekPublicKey)
+
+        val lunaUnwrapCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding", "LunaProvider")
+        lunaWrapCipher.init(Cipher.UNWRAP_MODE, kekPrivateKey)
+
+        val keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "LunaProvider")
+        keyPairGenerator.initialize(new ECGenParameterSpec("c2pnb304w1"))
+        val ecdsaKeyPair = keyPairGenerator.generateKeyPair()
+
+        val ecdsaPrivateKeyCipher = lunaWrapCipher.wrap(ecdsaKeyPair.getPrivate)
+
+        val ecdsaPrivateKey = lunaUnwrapCipher.unwrap(ecdsaPrivateKeyCipher, ecdsaKeyPair.getPrivate.getAlgorithm, Cipher.PRIVATE_KEY).asInstanceOf[PrivateKey]
+        val ecdsaPublicKey = ecdsaKeyPair.getPublic
+
+        val lunaSignature = Signature.getInstance("SHA256withECDSA", "LunaProvider")
+        lunaSignature.initSign(ecdsaPrivateKey)
+        lunaSignature.update(data)
+        val sign = lunaSignature.sign()
+
+        val bcSignature = Signature.getInstance("SHA256withRSA", "BC")
+        bcSignature.initVerify(ecdsaPublicKey)
+        bcSignature.update(data)
+        val good = bcSignature.verify(sign)
+
+        ctx.complete(
+          "ok" + "\r\n" +
+            "sign: " + BaseEncoding.base16().encode(sign) + "\r\n" +
+            "good: " + good + "\r\n" +
+            "Public key" + "\r\n" +
+            ecdsaPublicKey.getAlgorithm + "\r\n" +
+            ecdsaPublicKey.getFormat + "\r\n" +
+            BaseEncoding.base16().encode(ecdsaPublicKey.getEncoded) + "\r\n" +
+            ecdsaPrivateKey.getAlgorithm + "\r\n" +
+            ecdsaPrivateKey.getFormat + "\r\n" +
+            BaseEncoding.base16().encode(ecdsaPrivateKey.getEncoded) + "\r\n"
         )
       }}
     }
