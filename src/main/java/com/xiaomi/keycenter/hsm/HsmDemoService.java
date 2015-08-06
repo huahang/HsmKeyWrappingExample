@@ -115,6 +115,7 @@ public class HsmDemoService implements DemoService {
         obj.SetBooleanAttribute(LunaAPI.CKA_DECRYPT, true);
         obj.SetBooleanAttribute(LunaAPI.CKA_WRAP, false);
         obj.SetBooleanAttribute(LunaAPI.CKA_UNWRAP, false);
+        obj.SetBooleanAttribute(LunaAPI.CKA_EXTRACTABLE, false);
         keyStore.setKeyEntry(alias, key, null, null);
         return key;
     }
