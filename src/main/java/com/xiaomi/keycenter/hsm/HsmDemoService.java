@@ -6,6 +6,7 @@ import com.safenetinc.luna.LunaSlotManager;
 import com.safenetinc.luna.LunaTokenObject;
 import com.safenetinc.luna.provider.key.LunaSecretKey;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -111,7 +112,9 @@ public class HsmDemoService implements DemoService {
         obj.SetBooleanAttribute(LunaAPI.CKA_WRAP, false);
         obj.SetBooleanAttribute(LunaAPI.CKA_UNWRAP, false);
         obj.SetBooleanAttribute(LunaAPI.CKA_EXTRACTABLE, false);
-        keyStore.setKeyEntry(alias, key, null, null);
+        if (StringUtils.isNotBlank(alias)) {
+            keyStore.setKeyEntry(alias, key, null, null);
+        }
         return key;
     }
 
@@ -126,7 +129,9 @@ public class HsmDemoService implements DemoService {
         obj.SetBooleanAttribute(LunaAPI.CKA_WRAP, true);
         obj.SetBooleanAttribute(LunaAPI.CKA_UNWRAP, true);
         obj.SetBooleanAttribute(LunaAPI.CKA_EXTRACTABLE, false);
-        keyStore.setKeyEntry(alias, key, null, null);
+        if (StringUtils.isNotBlank(alias)) {
+            keyStore.setKeyEntry(alias, key, null, null);
+        }
         return key;
     }
 
