@@ -1,5 +1,8 @@
 package com.xiaomi.keycenter.hsm
 
+import java.io.ByteArrayInputStream
+import java.security.PrivateKey
+import java.security.cert.CertificateFactory
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 
@@ -88,8 +91,21 @@ class HsmDemoHandler extends HttpServiceActor {
         )
       }} ~ path("test2") { ctx => {
         val service = injector.getInstance(classOf[DemoService])
+        val certificateFactory = CertificateFactory.getInstance("X.509", "BC")
+        val certificate = certificateFactory.generateCertificate(
+          new ByteArrayInputStream(service.getRootCertificate("root_nistp521_01_cert").getEncoded)
+        )
+        val publicKey = certificate.getPublicKey
+        val cipher = Cipher.getInstance("EC", "BC")
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey)
+        val cipherBytes = cipher.doFinal("12345".getBytes(Charsets.UTF_8))
+        val lunaCipher = Cipher.getInstance("EC", "LunaProvider")
+        val privateKey: PrivateKey = service.getRootKey("root_nistp521_01_priv").asInstanceOf[PrivateKey]
+        lunaCipher.init(Cipher.DECRYPT_MODE, privateKey)
+        val rawBytes = lunaCipher.doFinal(cipherBytes)
+        val rawString = new String(rawBytes, Charsets.UTF_8)
         ctx.complete(
-          "\r\n"
+          rawString + "\r\n"
         )
       }}
     }
