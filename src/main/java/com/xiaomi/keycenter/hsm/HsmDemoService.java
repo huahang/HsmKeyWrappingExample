@@ -114,6 +114,11 @@ public class HsmDemoService implements DemoService {
     }
 
     @Override
+    public Certificate getRootCertificate(String alias) throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
+        return keyStore.getCertificate(alias);
+    }
+
+    @Override
     public List<String> listRootKeys() throws KeyStoreException {
         List<String> aliasList = Collections.list(keyStore.aliases());
         Collections.sort(aliasList);

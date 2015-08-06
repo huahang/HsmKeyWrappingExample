@@ -6,6 +6,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import java.security.cert.Certificate;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -23,6 +24,8 @@ import java.util.List;
  */
 public interface DemoService {
     Key getRootKey(String alias) throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException;
+
+    Certificate getRootCertificate(String alias) throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException;
 
     SecretKey generateRootKey(String alias) throws NoSuchProviderException, NoSuchAlgorithmException, KeyStoreException;
 

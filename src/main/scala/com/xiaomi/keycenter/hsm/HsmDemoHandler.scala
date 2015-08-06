@@ -57,6 +57,17 @@ class HsmDemoHandler extends HttpServiceActor {
               BaseEncoding.base16().encode(key.getEncoded) + "\r\n"
           )
         }}}
+      } ~ path("getRootCertificate") {
+        parameter('alias) { alias => { ctx => {
+          val service = injector.getInstance(classOf[DemoService])
+          val certificate = service.getRootCertificate(alias)
+          ctx.complete(
+            "ok\r\n" +
+              "Certificate" + "\r\n" +
+              certificate.getType + "\r\n" +
+              BaseEncoding.base16().encode(certificate.getEncoded) + "\r\n"
+          )
+        }}}
       } ~ path("listRootKeys") { ctx => {
         val service = injector.getInstance(classOf[DemoService])
         ctx.complete(StringUtils.join(service.listRootKeys(), "\r\n") + "\r\n")
@@ -69,6 +80,11 @@ class HsmDemoHandler extends HttpServiceActor {
         val raw = new String(c.doFinal(cipher), Charsets.UTF_8)
         ctx.complete(
           raw + "\r\n"
+        )
+      }} ~ path("test2") { ctx => {
+        val service = injector.getInstance(classOf[DemoService])
+        ctx.complete(
+          "\r\n"
         )
       }}
     }
