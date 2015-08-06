@@ -54,7 +54,7 @@ class HsmDemoHandler extends HttpServiceActor {
             "ok\r\n" +
               key.getAlgorithm + "\r\n" +
               key.getFormat + "\r\n" +
-              BaseEncoding.base16().encode(key.getEncoded) + "\r\n" +
+              BaseEncoding.base16().encode(key.getEncoded) + "\r\n"
           )
         }}}
       } ~ path("listRootKeys") { ctx => {
