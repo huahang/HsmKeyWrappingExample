@@ -1,5 +1,6 @@
 package com.xiaomi.keycenter.hsm;
 
+import com.google.common.base.Preconditions;
 import com.google.inject.Singleton;
 import com.safenetinc.luna.LunaAPI;
 import com.safenetinc.luna.LunaSlotManager;
@@ -92,7 +93,7 @@ public class HsmDemoService implements DemoService {
                 System.exit(-1);
             }
             slotManager.login(partitionName, partitionPass);
-            slotManager.setSecretKeysExtractable(true);
+            slotManager.setSecretKeysExtractable(false);
             keyStore = KeyStore.getInstance("Luna");
             keyStore.load(null, null);
         } catch (Exception e) {
@@ -112,27 +113,28 @@ public class HsmDemoService implements DemoService {
         obj.SetBooleanAttribute(LunaAPI.CKA_DECRYPT, true);
         obj.SetBooleanAttribute(LunaAPI.CKA_WRAP, false);
         obj.SetBooleanAttribute(LunaAPI.CKA_UNWRAP, false);
-        obj.SetBooleanAttribute(LunaAPI.CKA_EXTRACTABLE, false);
         if (StringUtils.isNotBlank(alias)) {
+            obj.SetBooleanAttribute(LunaAPI.CKA_EXTRACTABLE, false);
             keyStore.setKeyEntry(alias, key, null, null);
+        } else {
+            obj.SetBooleanAttribute(LunaAPI.CKA_EXTRACTABLE, true);
         }
         return key;
     }
 
     @Override
     public SecretKey generateRootKek(String alias) throws NoSuchProviderException, NoSuchAlgorithmException, KeyStoreException {
+        Preconditions.checkArgument(StringUtils.isNoneBlank(alias), "blank alias");
         KeyGenerator kg = KeyGenerator.getInstance("AES", "LunaProvider");
         kg.init(256);
         LunaSecretKey key = (LunaSecretKey) kg.generateKey();
         LunaTokenObject obj = LunaTokenObject.LocateObjectByHandle(key.GetKeyHandle());
-        obj.SetBooleanAttribute(LunaAPI.CKA_ENCRYPT, true);
-        obj.SetBooleanAttribute(LunaAPI.CKA_DECRYPT, true);
+        obj.SetBooleanAttribute(LunaAPI.CKA_ENCRYPT, false);
+        obj.SetBooleanAttribute(LunaAPI.CKA_DECRYPT, false);
         obj.SetBooleanAttribute(LunaAPI.CKA_WRAP, true);
         obj.SetBooleanAttribute(LunaAPI.CKA_UNWRAP, true);
         obj.SetBooleanAttribute(LunaAPI.CKA_EXTRACTABLE, false);
-        if (StringUtils.isNotBlank(alias)) {
-            keyStore.setKeyEntry(alias, key, null, null);
-        }
+        keyStore.setKeyEntry(alias, key, null, null);
         return key;
     }
 
