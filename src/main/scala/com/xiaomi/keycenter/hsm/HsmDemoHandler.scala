@@ -146,24 +146,24 @@ class HsmDemoHandler extends HttpServiceActor {
 
         val data = "hello, world!".getBytes(Charsets.UTF_8)
 
-        val kek = service.generateRootKey("root_aes128_01")
+        val kek = service.generateRootKey("root_des128_01")
 
-        val lunaKekCipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "LunaProvider")
+        val lunaKekCipher = Cipher.getInstance("DES/ECB/PKCS5Padding", "LunaProvider")
 
         val keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "LunaProvider")
         keyPairGenerator.initialize(new ECGenParameterSpec("c2pnb304w1"))
         val ecdsaKeyPair = keyPairGenerator.generateKeyPair()
 
-        val FIXED_128BIT_IV_FOR_TESTS = LunaUtils.hexStringToByteArray("DEADD00D8BADF00DDEADBABED15EA5ED")
+        //val FIXED_128BIT_IV_FOR_TESTS = LunaUtils.hexStringToByteArray("DEADD00D8BADF00DDEADBABED15EA5ED")
 
-        val algParam1 = AlgorithmParameters.getInstance("IV", "LunaProvider")
-        algParam1.init(new IvParameterSpec(FIXED_128BIT_IV_FOR_TESTS))
-        lunaKekCipher.init(Cipher.WRAP_MODE, kek, algParam1)
+        //val algParam1 = AlgorithmParameters.getInstance("IV", "LunaProvider")
+        //algParam1.init(new IvParameterSpec(FIXED_128BIT_IV_FOR_TESTS))
+        lunaKekCipher.init(Cipher.WRAP_MODE, kek)
         val ecdsaPrivateKeyCipher = lunaKekCipher.wrap(ecdsaKeyPair.getPrivate)
 
-        val algParam2 = AlgorithmParameters.getInstance("IV", "LunaProvider")
-        algParam2.init(new IvParameterSpec(FIXED_128BIT_IV_FOR_TESTS))
-        lunaKekCipher.init(Cipher.UNWRAP_MODE, kek, algParam2)
+//        val algParam2 = AlgorithmParameters.getInstance("IV", "LunaProvider")
+//        algParam2.init(new IvParameterSpec(FIXED_128BIT_IV_FOR_TESTS))
+        lunaKekCipher.init(Cipher.UNWRAP_MODE, kek)//, algParam2)
         val ecdsaPrivateKey = lunaKekCipher.unwrap(ecdsaPrivateKeyCipher, ecdsaKeyPair.getPrivate.getAlgorithm, Cipher.PRIVATE_KEY).asInstanceOf[PrivateKey]
         val ecdsaPublicKey = ecdsaKeyPair.getPublic
 

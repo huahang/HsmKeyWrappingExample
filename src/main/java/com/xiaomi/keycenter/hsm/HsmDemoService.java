@@ -103,7 +103,7 @@ public class HsmDemoService implements DemoService {
 
     @Override
     public SecretKey generateRootKey(String alias) throws NoSuchProviderException, NoSuchAlgorithmException, KeyStoreException {
-        KeyGenerator kg = KeyGenerator.getInstance("AES", "LunaProvider");
+        KeyGenerator kg = KeyGenerator.getInstance("DES", "LunaProvider");
         kg.init(128);
         LunaSecretKey key = (LunaSecretKey) kg.generateKey();
         LunaTokenObject obj = LunaTokenObject.LocateObjectByHandle(key.GetKeyHandle());
