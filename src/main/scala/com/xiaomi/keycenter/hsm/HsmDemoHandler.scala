@@ -114,6 +114,30 @@ class HsmDemoHandler extends HttpServiceActor {
             "sign: " + BaseEncoding.base16().encode(sign) + "\r\n" +
             "good: " + good + "\r\n"
         )
+      }} ~ path("test3") { ctx => {
+        val service = injector.getInstance(classOf[DemoService])
+        val certificateFactory = CertificateFactory.getInstance("X.509", "BC")
+        val certificate = certificateFactory.generateCertificate(
+          new ByteArrayInputStream(service.getRootCertificate("root_rsa2048_01_cert").getEncoded)
+        )
+        val data = "hello, world!".getBytes(Charsets.UTF_8)
+        val privateKey = service.getRootKey("root_rsa2048_01_priv").asInstanceOf[PrivateKey]
+
+        val lunaSignature = Signature.getInstance("SHA256withRSA", "LunaProvider")
+        lunaSignature.initSign(privateKey)
+        lunaSignature.update(data)
+        val sign = lunaSignature.sign()
+
+        val bcSignature = Signature.getInstance("SHA256withRSA", "BC")
+        bcSignature.initVerify(certificate)
+        bcSignature.update(data)
+        val good = bcSignature.verify(sign)
+
+        ctx.complete(
+          "ok" + "\r\n" +
+            "sign: " + BaseEncoding.base16().encode(sign) + "\r\n" +
+            "good: " + good + "\r\n"
+        )
       }}
     }
   }
