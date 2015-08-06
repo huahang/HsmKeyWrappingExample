@@ -153,10 +153,10 @@ class HsmDemoHandler extends HttpServiceActor {
         keyPairGenerator.initialize(new ECGenParameterSpec("c2pnb304w1"))
         val ecdsaKeyPair = keyPairGenerator.generateKeyPair()
 
-        lunaKekCipher.init(Cipher.WRAP_MODE, kek)
+        lunaKekCipher.init(Cipher.WRAP_MODE, kek, new IvParameterSpec ("0102030405060708".getBytes))
         val ecdsaPrivateKeyCipher = lunaKekCipher.wrap(ecdsaKeyPair.getPrivate)
 
-        lunaKekCipher.init(Cipher.UNWRAP_MODE, kek)
+        lunaKekCipher.init(Cipher.UNWRAP_MODE, kek, new IvParameterSpec ("0102030405060708".getBytes))
         val ecdsaPrivateKey = lunaKekCipher.unwrap(ecdsaPrivateKeyCipher, ecdsaKeyPair.getPrivate.getAlgorithm, Cipher.PRIVATE_KEY).asInstanceOf[PrivateKey]
         val ecdsaPublicKey = ecdsaKeyPair.getPublic
 
