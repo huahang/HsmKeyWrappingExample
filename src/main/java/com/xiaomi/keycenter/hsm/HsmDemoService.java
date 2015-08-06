@@ -168,7 +168,7 @@ public class HsmDemoService implements DemoService {
     @Override
     public byte[] wrap(String alias, Key key) throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException {
         Key kek = keyStore.getKey(alias, null);
-        Cipher aesCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider");
+        Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "LunaProvider");
         aesCipher.init(Cipher.WRAP_MODE, kek, new IvParameterSpec("0102030405060708".getBytes()));
         return aesCipher.wrap(key);
     }
@@ -176,7 +176,7 @@ public class HsmDemoService implements DemoService {
     @Override
     public Key unwrap(String alias, byte[] cipher, String algorithm, int type) throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException {
         Key kek = keyStore.getKey(alias, null);
-        Cipher aesCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider");
+        Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "LunaProvider");
         aesCipher.init(Cipher.UNWRAP_MODE, kek, new IvParameterSpec("0102030405060708".getBytes()));
         return aesCipher.unwrap(cipher, algorithm, type);
     }
