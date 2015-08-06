@@ -148,7 +148,7 @@ class HsmDemoHandler extends HttpServiceActor {
 
         val kek = service.generateRootKey("root_des128_01")
 
-        val lunaKekCipher = Cipher.getInstance("DES/ECB/PKCS5Padding", "LunaProvider")
+        val lunaKekCipher = Cipher.getInstance("DES/ECB/NoPadding", "LunaProvider")
 
         val keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "LunaProvider")
         keyPairGenerator.initialize(new ECGenParameterSpec("c2pnb304w1"))
