@@ -152,7 +152,7 @@ class HsmDemoHandler extends HttpServiceActor {
         lunaWrapCipher.init(Cipher.WRAP_MODE, kekPublicKey)
 
         val lunaUnwrapCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding", "LunaProvider")
-        lunaWrapCipher.init(Cipher.UNWRAP_MODE, kekPrivateKey)
+        lunaUnwrapCipher.init(Cipher.UNWRAP_MODE, kekPrivateKey)
 
         val keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "LunaProvider")
         keyPairGenerator.initialize(new ECGenParameterSpec("c2pnb304w1"))
