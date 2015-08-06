@@ -145,22 +145,19 @@ class HsmDemoHandler extends HttpServiceActor {
 
         val data = "hello, world!".getBytes(Charsets.UTF_8)
 
-        val kekPublicKey = service.getRootCertificate("root_rsa2048_01_cert").getPublicKey
-        val kekPrivateKey = service.getRootKey("root_rsa2048_01_priv").asInstanceOf[PrivateKey]
+        val kek = service.generateRootKey("root_aes256_01")
 
-        val lunaWrapCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding", "LunaProvider")
-        lunaWrapCipher.init(Cipher.WRAP_MODE, kekPublicKey)
-
-        val lunaUnwrapCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding", "LunaProvider")
-        lunaUnwrapCipher.init(Cipher.UNWRAP_MODE, kekPrivateKey)
+        val lunaKekCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
 
         val keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "LunaProvider")
         keyPairGenerator.initialize(new ECGenParameterSpec("c2pnb304w1"))
         val ecdsaKeyPair = keyPairGenerator.generateKeyPair()
 
-        val ecdsaPrivateKeyCipher = lunaWrapCipher.wrap(ecdsaKeyPair.getPrivate)
+        lunaKekCipher.init(Cipher.WRAP_MODE, kek)
+        val ecdsaPrivateKeyCipher = lunaKekCipher.wrap(ecdsaKeyPair.getPrivate)
 
-        val ecdsaPrivateKey = lunaUnwrapCipher.unwrap(ecdsaPrivateKeyCipher, ecdsaKeyPair.getPrivate.getAlgorithm, Cipher.PRIVATE_KEY).asInstanceOf[PrivateKey]
+        lunaKekCipher.init(Cipher.UNWRAP_MODE, kek)
+        val ecdsaPrivateKey = lunaKekCipher.unwrap(ecdsaPrivateKeyCipher, ecdsaKeyPair.getPrivate.getAlgorithm, Cipher.PRIVATE_KEY).asInstanceOf[PrivateKey]
         val ecdsaPublicKey = ecdsaKeyPair.getPublic
 
         val lunaSignature = Signature.getInstance("SHA256withECDSA", "LunaProvider")
