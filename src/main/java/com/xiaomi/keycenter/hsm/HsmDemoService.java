@@ -110,9 +110,14 @@ public class HsmDemoService implements DemoService {
     @Override
     public KeyPair getRootKeyPair(String alias) throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
         Key privateKey = keyStore.getKey(alias, null);
+        if (!(privateKey instanceof PrivateKey)) {
+            System.out.println("Private key is null");
+            return null;
+        }
         Certificate certificate = keyStore.getCertificate(alias);
         PublicKey publicKey = null == certificate ? null : certificate.getPublicKey();
         if (!(privateKey instanceof PrivateKey) || null == publicKey) {
+            System.out.println("Public key is null");
             return null;
         }
         return new KeyPair(publicKey, (PrivateKey) privateKey);
