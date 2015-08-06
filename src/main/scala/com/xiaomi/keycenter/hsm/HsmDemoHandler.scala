@@ -158,17 +158,17 @@ class HsmDemoHandler extends HttpServiceActor {
 
         val data = "hello, world!".getBytes(Charsets.UTF_8)
 
-        val keyGenerator = KeyGenerator.getInstance("AES", "BC")
+        val keyGenerator = KeyGenerator.getInstance("AES", "LunaProvider")
         keyGenerator.init(256)
         val secretKey = keyGenerator.generateKey()
-        val bcCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC")
-        bcCipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec("0102030405060708".getBytes))
-        val cipher = bcCipher.doFinal(data)
+        val encryptCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
+        encryptCipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec("0102030405060708".getBytes))
+        val cipher = encryptCipher.doFinal(data)
         val keyCipher = service.wrap("666_kek", secretKey)
         val unwrappedKey = service.unwrap("666_kek", keyCipher, secretKey.getAlgorithm, Cipher.SECRET_KEY)
-        val lunaCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
-        lunaCipher.init(Cipher.DECRYPT_MODE, unwrappedKey, new IvParameterSpec("0102030405060708".getBytes))
-        val dataString = new String(lunaCipher.doFinal(cipher), Charsets.UTF_8)
+        val decryptCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
+        decryptCipher.init(Cipher.DECRYPT_MODE, unwrappedKey, new IvParameterSpec("0102030405060708".getBytes))
+        val dataString = new String(decryptCipher.doFinal(cipher), Charsets.UTF_8)
 
         ctx.complete(
           "ok" + "\r\n" +
