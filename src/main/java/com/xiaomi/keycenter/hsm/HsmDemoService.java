@@ -5,6 +5,7 @@ import com.google.inject.Singleton;
 import com.safenetinc.luna.LunaAPI;
 import com.safenetinc.luna.LunaSlotManager;
 import com.safenetinc.luna.LunaTokenObject;
+import com.safenetinc.luna.LunaUtils;
 import com.safenetinc.luna.provider.key.LunaSecretKey;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -159,7 +160,9 @@ public class HsmDemoService implements DemoService {
         Preconditions.checkArgument(StringUtils.isNoneBlank(alias), "blank alias");
         Key key = keyStore.getKey(alias, null);
         Cipher aesCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider");
-        aesCipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec("0102030405060708".getBytes()));
+        aesCipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(
+                LunaUtils.hexStringToByteArray("DEADD00D8BADF00DDEADBABED15EA5ED")
+        ));
         return aesCipher.doFinal(raw);
     }
 
@@ -168,7 +171,9 @@ public class HsmDemoService implements DemoService {
         Preconditions.checkArgument(StringUtils.isNoneBlank(alias), "blank alias");
         Key key = keyStore.getKey(alias, null);
         Cipher aesCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider");
-        aesCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec("0102030405060708".getBytes()));
+        aesCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(
+                LunaUtils.hexStringToByteArray("DEADD00D8BADF00DDEADBABED15EA5ED")
+        ));
         return aesCipher.doFinal(cipher);
     }
 
@@ -177,7 +182,9 @@ public class HsmDemoService implements DemoService {
         Preconditions.checkArgument(StringUtils.isNoneBlank(alias), "blank alias");
         Key kek = keyStore.getKey(alias, null);
         Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "LunaProvider");
-        aesCipher.init(Cipher.WRAP_MODE, kek, new IvParameterSpec("0102030405060708".getBytes()));
+        aesCipher.init(Cipher.WRAP_MODE, kek, new IvParameterSpec(
+                LunaUtils.hexStringToByteArray("DEADD00D8BADF00DDEADBABED15EA5ED")
+        ));
         return aesCipher.wrap(key);
     }
 
@@ -186,7 +193,9 @@ public class HsmDemoService implements DemoService {
         Preconditions.checkArgument(StringUtils.isNoneBlank(alias), "blank alias");
         Key kek = keyStore.getKey(alias, null);
         Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "LunaProvider");
-        aesCipher.init(Cipher.UNWRAP_MODE, kek, new IvParameterSpec("0102030405060708".getBytes()));
+        aesCipher.init(Cipher.UNWRAP_MODE, kek, new IvParameterSpec(
+                LunaUtils.hexStringToByteArray("DEADD00D8BADF00DDEADBABED15EA5ED")
+        ));
         return aesCipher.unwrap(cipher, algorithm, type);
     }
 }
