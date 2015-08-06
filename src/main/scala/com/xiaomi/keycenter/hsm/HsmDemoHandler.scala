@@ -95,10 +95,7 @@ class HsmDemoHandler extends HttpServiceActor {
       }} ~ path("test1") { ctx => {
         val service = injector.getInstance(classOf[DemoService])
         val cipher = service.encrypt("666", "123".getBytes(Charsets.UTF_8))
-        val c = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
-        val key = service.getRootKey("666")
-        c.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec("0102030405060708".getBytes()))
-        val raw = new String(c.doFinal(cipher), Charsets.UTF_8)
+        val raw = new String(service.decrypt("666", cipher), Charsets.UTF_8)
         ctx.complete(
           raw + "\r\n"
         )
