@@ -46,6 +46,8 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.UnrecoverableKeyException;
@@ -97,41 +99,23 @@ public class HsmDemoService implements DemoService {
     }
 
     @Override
-    public KeyPair generateRootKeyPair(String alias) throws NoSuchProviderException, NoSuchAlgorithmException, CertificateException, KeyStoreException, OperatorCreationException, IOException {
-        KeyPairGenerator g = KeyPairGenerator.getInstance("RSA", "LunaProvider");
-        g.initialize(2048);
-        KeyPair keyPair = g.generateKeyPair();
-        Date startDate = new Date(System.currentTimeMillis());
-        Date expiryDate = new Date(startDate.getTime() + TimeUnit.DAYS.toMillis(356 * 30));
-        BigInteger serialNumber = BigInteger.valueOf(System.currentTimeMillis());
-        serialNumber.shiftLeft(64);
-        serialNumber.add(BigInteger.valueOf(Math.abs(new SecureRandom().nextLong())));
-        X500Name x500Name = X500Name.getInstance(new X500Principal("CN=My Root Certificate").getEncoded());
-        X509v1CertificateBuilder certBuilder = new X509v1CertificateBuilder(
-                x500Name, serialNumber, startDate, expiryDate, x500Name,
-                SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded())
-        );
-        AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA256withRSA");
-        AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId);
-        BcContentSignerBuilder contentSignerBuilder = new BcRSAContentSignerBuilder(sigAlgId, digAlgId);
-        ContentSigner contentSigner = contentSignerBuilder.build(
-                PublicKeyFactory.createKey(SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded()))
-        );
-        X509CertificateHolder certificateHolder = certBuilder.build(contentSigner);
-        Certificate certificate = CertificateFactory.getInstance("X.509").generateCertificate(
-                new ByteArrayInputStream(certificateHolder.getEncoded())
-        );
-        keyStore.setKeyEntry(alias, keyPair.getPrivate(), null, ArrayUtils.addAll(null, certificate));
-        return keyPair;
-    }
-
-    @Override
     public SecretKey generateRootKey(String alias) throws NoSuchProviderException, NoSuchAlgorithmException, KeyStoreException {
         KeyGenerator kg = KeyGenerator.getInstance("AES", "LunaProvider");
         kg.init(256);
         SecretKey key = kg.generateKey();
         keyStore.setKeyEntry(alias, key, null, null);
         return key;
+    }
+
+    @Override
+    public KeyPair getRootKeyPair(String alias) throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
+        Key privateKey = keyStore.getKey(alias, null);
+        Certificate certificate = keyStore.getCertificate(alias);
+        PublicKey publicKey = null == certificate ? null : certificate.getPublicKey();
+        if (!(privateKey instanceof PrivateKey) || null == publicKey) {
+            return null;
+        }
+        return new KeyPair(publicKey, (PrivateKey) privateKey);
     }
 
     @Override

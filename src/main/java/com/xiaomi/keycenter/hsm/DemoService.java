@@ -21,7 +21,7 @@ import java.util.List;
  * @author huahang
  */
 public interface DemoService {
-    KeyPair generateRootKeyPair(String alias) throws NoSuchProviderException, NoSuchAlgorithmException, CertificateException, KeyStoreException, OperatorCreationException, IOException;
+    KeyPair getRootKeyPair(String alias) throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException;
 
     SecretKey generateRootKey(String alias) throws NoSuchProviderException, NoSuchAlgorithmException, KeyStoreException;
 

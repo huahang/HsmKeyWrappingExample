@@ -46,10 +46,10 @@ class HsmDemoHandler extends HttpServiceActor {
               BaseEncoding.base16().encode(secretKey.getEncoded) + "\r\n"
           )
         }}}
-      } ~ path("generateRootKeyPair") {
+      } ~ path("getRootKeyPair") {
         parameter('alias) { alias => { ctx => {
           val service = injector.getInstance(classOf[DemoService])
-          val keyPair = service.generateRootKeyPair(alias)
+          val keyPair = service.getRootKeyPair(alias)
           val publicKey = keyPair.getPublic
           val privateKey = keyPair.getPrivate
           ctx.complete(
