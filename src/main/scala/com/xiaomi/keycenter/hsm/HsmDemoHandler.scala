@@ -70,7 +70,7 @@ class HsmDemoHandler extends HttpServiceActor {
               "Public key" + "\r\n" +
               publicKey.getAlgorithm + "\r\n" +
               publicKey.getFormat + "\r\n" +
-              publicKey.getEncoded + "\r\n"
+              BaseEncoding.base16().encode(publicKey.getEncoded) + "\r\n"
           )
         }}}
       } ~ path("listRootKeys") { ctx => {
