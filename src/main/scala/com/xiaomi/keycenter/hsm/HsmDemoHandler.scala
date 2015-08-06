@@ -1,12 +1,11 @@
 package com.xiaomi.keycenter.hsm
 
 import java.io.ByteArrayInputStream
-import java.security.Key
+import java.security.{KeyFactory, Key, AlgorithmParameters, KeyPairGenerator, Signature, PrivateKey}
 import java.security.spec.ECGenParameterSpec
-import java.security.{AlgorithmParameters, KeyPairGenerator, Signature, PrivateKey}
 import java.security.cert.CertificateFactory
-import javax.crypto.{KeyGenerator, Cipher}
-import javax.crypto.spec.IvParameterSpec
+import javax.crypto.{SecretKeyFactory, KeyGenerator, Cipher}
+import javax.crypto.spec.{SecretKeySpec, IvParameterSpec}
 
 import com.google.common.base.Charsets
 import com.google.common.io.BaseEncoding
@@ -158,9 +157,12 @@ class HsmDemoHandler extends HttpServiceActor {
 
         val data = "hello, world!".getBytes(Charsets.UTF_8)
 
-        val keyGenerator = KeyGenerator.getInstance("AES", "LunaProvider")
+        val keyGenerator = KeyGenerator.getInstance("AES", "BC")
         keyGenerator.init(256)
-        val secretKey = keyGenerator.generateKey()
+        val bcSecretKey = keyGenerator.generateKey()
+
+        val keyFactory = SecretKeyFactory.getInstance("AES", "LunaProvider")
+        val secretKey = keyFactory.generateSecret(new SecretKeySpec(bcSecretKey.getEncoded, bcSecretKey.getAlgorithm))
         val encryptCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
         encryptCipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec("0102030405060708".getBytes))
         val cipher = encryptCipher.doFinal(data)
