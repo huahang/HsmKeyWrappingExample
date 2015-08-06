@@ -103,14 +103,30 @@ public class HsmDemoService implements DemoService {
 
     @Override
     public SecretKey generateRootKey(String alias) throws NoSuchProviderException, NoSuchAlgorithmException, KeyStoreException {
-        KeyGenerator kg = KeyGenerator.getInstance("DES", "LunaProvider");
-        kg.init(128);
+        KeyGenerator kg = KeyGenerator.getInstance("AES", "LunaProvider");
+        kg.init(256);
+        LunaSecretKey key = (LunaSecretKey) kg.generateKey();
+        LunaTokenObject obj = LunaTokenObject.LocateObjectByHandle(key.GetKeyHandle());
+        obj.SetBooleanAttribute(LunaAPI.CKA_ENCRYPT, true);
+        obj.SetBooleanAttribute(LunaAPI.CKA_DECRYPT, true);
+        obj.SetBooleanAttribute(LunaAPI.CKA_WRAP, false);
+        obj.SetBooleanAttribute(LunaAPI.CKA_UNWRAP, false);
+        obj.SetBooleanAttribute(LunaAPI.CKA_EXTRACTABLE, false);
+        keyStore.setKeyEntry(alias, key, null, null);
+        return key;
+    }
+
+    @Override
+    public SecretKey generateRootKek(String alias) throws NoSuchProviderException, NoSuchAlgorithmException, KeyStoreException {
+        KeyGenerator kg = KeyGenerator.getInstance("AES", "LunaProvider");
+        kg.init(256);
         LunaSecretKey key = (LunaSecretKey) kg.generateKey();
         LunaTokenObject obj = LunaTokenObject.LocateObjectByHandle(key.GetKeyHandle());
         obj.SetBooleanAttribute(LunaAPI.CKA_ENCRYPT, false);
         obj.SetBooleanAttribute(LunaAPI.CKA_DECRYPT, false);
         obj.SetBooleanAttribute(LunaAPI.CKA_WRAP, true);
         obj.SetBooleanAttribute(LunaAPI.CKA_UNWRAP, true);
+        obj.SetBooleanAttribute(LunaAPI.CKA_EXTRACTABLE, false);
         keyStore.setKeyEntry(alias, key, null, null);
         return key;
     }
@@ -147,5 +163,21 @@ public class HsmDemoService implements DemoService {
         Cipher aesCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider");
         aesCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec("0102030405060708".getBytes()));
         return aesCipher.doFinal(cipher);
+    }
+
+    @Override
+    public byte[] wrap(String alias, Key key) throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException {
+        Key kek = keyStore.getKey(alias, null);
+        Cipher aesCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider");
+        aesCipher.init(Cipher.WRAP_MODE, kek, new IvParameterSpec("0102030405060708".getBytes()));
+        return aesCipher.wrap(key);
+    }
+
+    @Override
+    public Key unwrap(String alias, byte[] cipher, String algorithm, int type) throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException {
+        Key kek = keyStore.getKey(alias, null);
+        Cipher aesCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider");
+        aesCipher.init(Cipher.UNWRAP_MODE, kek, new IvParameterSpec("0102030405060708".getBytes()));
+        return aesCipher.unwrap(cipher, algorithm, type);
     }
 }

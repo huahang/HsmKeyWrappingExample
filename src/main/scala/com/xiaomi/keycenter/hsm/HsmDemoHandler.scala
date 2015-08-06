@@ -1,10 +1,11 @@
 package com.xiaomi.keycenter.hsm
 
 import java.io.ByteArrayInputStream
+import java.security.Key
 import java.security.spec.ECGenParameterSpec
 import java.security.{AlgorithmParameters, KeyPairGenerator, Signature, PrivateKey}
 import java.security.cert.CertificateFactory
-import javax.crypto.Cipher
+import javax.crypto.{KeyGenerator, Cipher}
 import javax.crypto.spec.IvParameterSpec
 
 import com.google.common.base.Charsets
@@ -51,6 +52,17 @@ class HsmDemoHandler extends HttpServiceActor {
               BaseEncoding.base16().encode(secretKey.getEncoded) + "\r\n"
           )
         }}}
+      } ~ path("generateRootKek") {
+        parameter('alias) { alias => { ctx => {
+          val service = injector.getInstance(classOf[DemoService])
+          val secretKey = service.generateRootKek(alias)
+          ctx.complete(
+            "ok\r\n" +
+              secretKey.getAlgorithm + "\r\n" +
+              secretKey.getFormat + "\r\n" +
+              BaseEncoding.base16().encode(secretKey.getEncoded) + "\r\n"
+          )
+        }}}
       } ~ path("getRootKey") {
         parameter('alias) { alias => { ctx => {
           val service = injector.getInstance(classOf[DemoService])
@@ -83,9 +95,9 @@ class HsmDemoHandler extends HttpServiceActor {
         ctx.complete(StringUtils.join(service.listRootKeys(), "\r\n") + "\r\n")
       }} ~ path("test1") { ctx => {
         val service = injector.getInstance(classOf[DemoService])
-        val key = service.generateRootKey("666")
         val cipher = service.encrypt("666", "123".getBytes(Charsets.UTF_8))
         val c = Cipher.getInstance("AES/GCM/NoPadding", "BC")
+        val key = service.getRootKey("666")
         c.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec("0102030405060708".getBytes()))
         val raw = new String(c.doFinal(cipher), Charsets.UTF_8)
         ctx.complete(
@@ -146,52 +158,31 @@ class HsmDemoHandler extends HttpServiceActor {
 
         val data = "hello, world!".getBytes(Charsets.UTF_8)
 
-        val kek = service.generateRootKey("root_des128_01")
-
-        val lunaKekCipher = Cipher.getInstance("DES/ECB/NoPadding", "LunaProvider")
-
-        val keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "LunaProvider")
-        keyPairGenerator.initialize(new ECGenParameterSpec("c2pnb304w1"))
-        val ecdsaKeyPair = keyPairGenerator.generateKeyPair()
-
-        //val FIXED_128BIT_IV_FOR_TESTS = LunaUtils.hexStringToByteArray("DEADD00D8BADF00DDEADBABED15EA5ED")
-
-        //val algParam1 = AlgorithmParameters.getInstance("IV", "LunaProvider")
-        //algParam1.init(new IvParameterSpec(FIXED_128BIT_IV_FOR_TESTS))
-        lunaKekCipher.init(Cipher.WRAP_MODE, kek)
-        val ecdsaPrivateKeyCipher = lunaKekCipher.wrap(ecdsaKeyPair.getPrivate)
-
-//        val algParam2 = AlgorithmParameters.getInstance("IV", "LunaProvider")
-//        algParam2.init(new IvParameterSpec(FIXED_128BIT_IV_FOR_TESTS))
-        lunaKekCipher.init(Cipher.UNWRAP_MODE, kek)//, algParam2)
-        val ecdsaPrivateKey = lunaKekCipher.unwrap(ecdsaPrivateKeyCipher, ecdsaKeyPair.getPrivate.getAlgorithm, Cipher.PRIVATE_KEY).asInstanceOf[PrivateKey]
-        val ecdsaPublicKey = ecdsaKeyPair.getPublic
-
-        val lunaSignature = Signature.getInstance("SHA256withECDSA", "LunaProvider")
-        lunaSignature.initSign(ecdsaPrivateKey)
-        lunaSignature.update(data)
-        val sign = lunaSignature.sign()
-
-        val bcSignature = Signature.getInstance("SHA256withRSA", "BC")
-        bcSignature.initVerify(ecdsaPublicKey)
-        bcSignature.update(data)
-        val good = bcSignature.verify(sign)
+        val keyGenerator = KeyGenerator.getInstance("AES", "LunaProvider")
+        keyGenerator.init(256)
+        val secretKey = keyGenerator.generateKey()
+        val aesCipher = Cipher.getInstance("AES/ECB/PKCS5Padding", "LunaProvider")
+        aesCipher.init(Cipher.ENCRYPT_MODE, secretKey)
+        val cipher = aesCipher.doFinal(data)
+        val keyCipher = service.wrap("666_kek", secretKey);
+        val unwrappedKey = service.unwrap("666_kek", keyCipher, secretKey.getAlgorithm, Cipher.SECRET_KEY)
+        aesCipher.init(Cipher.DECRYPT_MODE, unwrappedKey)
+        val dataString = new String(aesCipher.doFinal(cipher), Charsets.UTF_8)
 
         ctx.complete(
           "ok" + "\r\n" +
-            "sign: " + BaseEncoding.base16().encode(sign) + "\r\n" +
-            "good: " + good + "\r\n" +
-            "Public key" + "\r\n" +
-            ecdsaPublicKey.getAlgorithm + "\r\n" +
-            ecdsaPublicKey.getFormat + "\r\n" +
-            BaseEncoding.base16().encode(ecdsaPublicKey.getEncoded) + "\r\n" +
-            ecdsaPrivateKey.getAlgorithm + "\r\n" +
-            ecdsaPrivateKey.getFormat + "\r\n" +
-            BaseEncoding.base16().encode(ecdsaPrivateKey.getEncoded) + "\r\n"
+            "data string: " + dataString + "\r\n" +
+            "secret key:" + "\r\n" + key2string(secretKey) + "\r\n" +
+            "unwrapped key" + "\r\n" + key2string(unwrappedKey) + "\r\n"
         )
       }}
     }
   }
+
+  def key2string(k: Key) = "" +
+    k.getAlgorithm + "\r\n" +
+    k.getFormat + "\r\n" +
+    BaseEncoding.base16().encode(k.getEncoded) + "\r\n"
 
   override def receive: Receive = runRoute(route)
 }
