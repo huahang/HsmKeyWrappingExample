@@ -121,6 +121,7 @@ class HsmDemoHandler extends HttpServiceActor {
           new ByteArrayInputStream(service.getRootCertificate("root_rsa2048_01_cert").getEncoded)
         )
         val data = "hello, world!".getBytes(Charsets.UTF_8)
+        val publicKey = certificate.getPublicKey
         val privateKey = service.getRootKey("root_rsa2048_01_priv").asInstanceOf[PrivateKey]
 
         val lunaSignature = Signature.getInstance("SHA256withRSA", "LunaProvider")
@@ -129,7 +130,7 @@ class HsmDemoHandler extends HttpServiceActor {
         val sign = lunaSignature.sign()
 
         val bcSignature = Signature.getInstance("SHA256withRSA", "BC")
-        bcSignature.initVerify(certificate)
+        bcSignature.initVerify(publicKey)
         bcSignature.update(data)
         val good = bcSignature.verify(sign)
 
