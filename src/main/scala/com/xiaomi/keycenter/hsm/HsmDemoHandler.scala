@@ -2,7 +2,7 @@ package com.xiaomi.keycenter.hsm
 
 import java.io.ByteArrayInputStream
 import java.security.spec.ECGenParameterSpec
-import java.security.{KeyPairGenerator, Signature, PrivateKey}
+import java.security.{AlgorithmParameters, KeyPairGenerator, Signature, PrivateKey}
 import java.security.cert.CertificateFactory
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
@@ -11,6 +11,7 @@ import com.google.common.base.Charsets
 import com.google.common.io.BaseEncoding
 import com.google.gson.Gson
 import com.google.inject.Guice
+import com.safenetinc.luna.LunaUtils
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import spray.http.HttpResponse
@@ -153,10 +154,16 @@ class HsmDemoHandler extends HttpServiceActor {
         keyPairGenerator.initialize(new ECGenParameterSpec("c2pnb304w1"))
         val ecdsaKeyPair = keyPairGenerator.generateKeyPair()
 
-        lunaKekCipher.init(Cipher.WRAP_MODE, kek, new IvParameterSpec ("0102030405060708".getBytes))
+        val FIXED_128BIT_IV_FOR_TESTS = LunaUtils.hexStringToByteArray("DEADD00D8BADF00DDEADBABED15EA5ED")
+
+        val algParam1 = AlgorithmParameters.getInstance("IV", "LunaProvider")
+        algParam1.init(new IvParameterSpec(FIXED_128BIT_IV_FOR_TESTS))
+        lunaKekCipher.init(Cipher.WRAP_MODE, kek, algParam1)
         val ecdsaPrivateKeyCipher = lunaKekCipher.wrap(ecdsaKeyPair.getPrivate)
 
-        lunaKekCipher.init(Cipher.UNWRAP_MODE, kek, new IvParameterSpec ("0102030405060708".getBytes))
+        val algParam2 = AlgorithmParameters.getInstance("IV", "LunaProvider")
+        algParam2.init(new IvParameterSpec(FIXED_128BIT_IV_FOR_TESTS))
+        lunaKekCipher.init(Cipher.UNWRAP_MODE, kek, algParam2)
         val ecdsaPrivateKey = lunaKekCipher.unwrap(ecdsaPrivateKeyCipher, ecdsaKeyPair.getPrivate.getAlgorithm, Cipher.PRIVATE_KEY).asInstanceOf[PrivateKey]
         val ecdsaPublicKey = ecdsaKeyPair.getPublic
 
