@@ -1,7 +1,10 @@
 package com.xiaomi.keycenter.hsm;
 
 import com.google.inject.Singleton;
+import com.safenetinc.luna.LunaAPI;
 import com.safenetinc.luna.LunaSlotManager;
+import com.safenetinc.luna.LunaTokenObject;
+import com.safenetinc.luna.provider.key.LunaSecretKey;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -102,7 +105,12 @@ public class HsmDemoService implements DemoService {
     public SecretKey generateRootKey(String alias) throws NoSuchProviderException, NoSuchAlgorithmException, KeyStoreException {
         KeyGenerator kg = KeyGenerator.getInstance("AES", "LunaProvider");
         kg.init(256);
-        SecretKey key = kg.generateKey();
+        LunaSecretKey key = (LunaSecretKey) kg.generateKey();
+        LunaTokenObject obj = LunaTokenObject.LocateObjectByHandle(key.GetKeyHandle());
+        obj.SetBooleanAttribute(LunaAPI.CKA_ENCRYPT, true);
+        obj.SetBooleanAttribute(LunaAPI.CKA_DECRYPT, true);
+        obj.SetBooleanAttribute(LunaAPI.CKA_WRAP, true);
+        obj.SetBooleanAttribute(LunaAPI.CKA_UNWRAP, true);
         keyStore.setKeyEntry(alias, key, null, null);
         return key;
     }
