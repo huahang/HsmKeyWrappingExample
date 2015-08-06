@@ -9,6 +9,7 @@ import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -21,7 +22,7 @@ import java.util.List;
  * @author huahang
  */
 public interface DemoService {
-    KeyPair getRootKeyPair(String alias) throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException;
+    Key getRootKey(String alias) throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException;
 
     SecretKey generateRootKey(String alias) throws NoSuchProviderException, NoSuchAlgorithmException, KeyStoreException;
 
