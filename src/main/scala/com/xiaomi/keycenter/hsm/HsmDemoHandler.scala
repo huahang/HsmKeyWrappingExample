@@ -146,7 +146,7 @@ class HsmDemoHandler extends HttpServiceActor {
 
         val data = "hello, world!".getBytes(Charsets.UTF_8)
 
-        val kek = service.generateRootKey("root_aes256_01")
+        val kek = service.generateRootKey("root_aes128_01")
 
         val lunaKekCipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "LunaProvider")
 
