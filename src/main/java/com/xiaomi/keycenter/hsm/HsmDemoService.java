@@ -10,6 +10,9 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v1CertificateBuilder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.crypto.params.RSAKeyParameters;
+import org.bouncycastle.crypto.util.PrivateKeyFactory;
+import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
@@ -111,13 +114,14 @@ public class HsmDemoService implements DemoService {
         AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA256withRSA");
         AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId);
         BcContentSignerBuilder contentSignerBuilder = new BcRSAContentSignerBuilder(sigAlgId, digAlgId);
-        ContentSigner contentSigner = contentSignerBuilder.build(new AsymmetricKeyParameter(false));
+        ContentSigner contentSigner = contentSignerBuilder.build(
+                PublicKeyFactory.createKey(SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded()))
+        );
         X509CertificateHolder certificateHolder = certBuilder.build(contentSigner);
         Certificate certificate = CertificateFactory.getInstance("X.509").generateCertificate(
                 new ByteArrayInputStream(certificateHolder.getEncoded())
         );
         keyStore.setKeyEntry(alias, keyPair.getPrivate(), null, ArrayUtils.addAll(null, certificate));
-        keyStore.setKeyEntry(alias, keyPair.getPrivate(), null, null);
         return keyPair;
     }
 
