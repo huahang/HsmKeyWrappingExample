@@ -61,11 +61,16 @@ class HsmDemoHandler extends HttpServiceActor {
         parameter('alias) { alias => { ctx => {
           val service = injector.getInstance(classOf[DemoService])
           val certificate = service.getRootCertificate(alias)
+          val publicKey = certificate.getPublicKey
           ctx.complete(
             "ok\r\n" +
               "Certificate" + "\r\n" +
               certificate.getType + "\r\n" +
-              BaseEncoding.base16().encode(certificate.getEncoded) + "\r\n"
+              BaseEncoding.base16().encode(certificate.getEncoded) + "\r\n" +
+              "Public key" + "\r\n" +
+              publicKey.getAlgorithm + "\r\n" +
+              publicKey.getFormat + "\r\n" +
+              publicKey.getEncoded + "\r\n"
           )
         }}}
       } ~ path("listRootKeys") { ctx => {
