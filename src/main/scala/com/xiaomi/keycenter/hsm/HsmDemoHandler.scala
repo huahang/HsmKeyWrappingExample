@@ -96,7 +96,7 @@ class HsmDemoHandler extends HttpServiceActor {
       }} ~ path("test1") { ctx => {
         val service = injector.getInstance(classOf[DemoService])
         val cipher = service.encrypt("666", "123".getBytes(Charsets.UTF_8))
-        val c = Cipher.getInstance("AES/GCM/NoPadding", "BC")
+        val c = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
         val key = service.getRootKey("666")
         c.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec("0102030405060708".getBytes()))
         val raw = new String(c.doFinal(cipher), Charsets.UTF_8)
@@ -161,12 +161,12 @@ class HsmDemoHandler extends HttpServiceActor {
         val keyGenerator = KeyGenerator.getInstance("AES", "LunaProvider")
         keyGenerator.init(256)
         val secretKey = keyGenerator.generateKey()
-        val aesCipher = Cipher.getInstance("AES/ECB/NoPadding", "LunaProvider")
-        aesCipher.init(Cipher.ENCRYPT_MODE, secretKey)
+        val aesCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
+        aesCipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec("0102030405060708".getBytes))
         val cipher = aesCipher.doFinal(data)
-        val keyCipher = service.wrap("666_kek", secretKey);
+        val keyCipher = service.wrap("666_kek", secretKey)
         val unwrappedKey = service.unwrap("666_kek", keyCipher, secretKey.getAlgorithm, Cipher.SECRET_KEY)
-        aesCipher.init(Cipher.DECRYPT_MODE, unwrappedKey)
+        aesCipher.init(Cipher.DECRYPT_MODE, unwrappedKey, new IvParameterSpec("0102030405060708".getBytes))
         val dataString = new String(aesCipher.doFinal(cipher), Charsets.UTF_8)
 
         ctx.complete(
