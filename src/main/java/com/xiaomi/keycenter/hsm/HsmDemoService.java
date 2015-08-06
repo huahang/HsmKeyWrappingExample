@@ -124,8 +124,8 @@ public class HsmDemoService implements DemoService {
         kg.init(256);
         LunaSecretKey key = (LunaSecretKey) kg.generateKey();
         LunaTokenObject obj = LunaTokenObject.LocateObjectByHandle(key.GetKeyHandle());
-        obj.SetBooleanAttribute(LunaAPI.CKA_ENCRYPT, false);
-        obj.SetBooleanAttribute(LunaAPI.CKA_DECRYPT, false);
+        obj.SetBooleanAttribute(LunaAPI.CKA_ENCRYPT, true);
+        obj.SetBooleanAttribute(LunaAPI.CKA_DECRYPT, true);
         obj.SetBooleanAttribute(LunaAPI.CKA_WRAP, true);
         obj.SetBooleanAttribute(LunaAPI.CKA_UNWRAP, true);
         obj.SetBooleanAttribute(LunaAPI.CKA_EXTRACTABLE, false);
