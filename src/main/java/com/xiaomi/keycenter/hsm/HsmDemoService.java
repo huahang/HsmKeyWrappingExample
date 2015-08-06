@@ -92,7 +92,7 @@ public class HsmDemoService implements DemoService {
                 System.exit(-1);
             }
             slotManager.login(partitionName, partitionPass);
-            slotManager.setSecretKeysExtractable(false);
+            slotManager.setSecretKeysExtractable(true);
             keyStore = KeyStore.getInstance("Luna");
             keyStore.load(null, null);
         } catch (Exception e) {
