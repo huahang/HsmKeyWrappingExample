@@ -161,13 +161,14 @@ class HsmDemoHandler extends HttpServiceActor {
         val keyGenerator = KeyGenerator.getInstance("AES", "BC")
         keyGenerator.init(256)
         val secretKey = keyGenerator.generateKey()
-        val aesCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
-        aesCipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec("0102030405060708".getBytes))
-        val cipher = aesCipher.doFinal(data)
+        val bcCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC")
+        bcCipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec("0102030405060708".getBytes))
+        val cipher = bcCipher.doFinal(data)
         val keyCipher = service.wrap("666_kek", secretKey)
         val unwrappedKey = service.unwrap("666_kek", keyCipher, secretKey.getAlgorithm, Cipher.SECRET_KEY)
-        aesCipher.init(Cipher.DECRYPT_MODE, unwrappedKey, new IvParameterSpec("0102030405060708".getBytes))
-        val dataString = new String(aesCipher.doFinal(cipher), Charsets.UTF_8)
+        val lunaCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
+        lunaCipher.init(Cipher.DECRYPT_MODE, unwrappedKey, new IvParameterSpec("0102030405060708".getBytes))
+        val dataString = new String(lunaCipher.doFinal(cipher), Charsets.UTF_8)
 
         ctx.complete(
           "ok" + "\r\n" +
