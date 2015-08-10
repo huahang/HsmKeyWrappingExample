@@ -1,8 +1,5 @@
 apply plugin: 'application'
-apply plugin: 'eclipse'
 apply plugin: 'scala'
-
-tasks.eclipse.dependsOn(cleanEclipse)
 
 String LUNA_LIB_DIR = '/usr/safenet/lunaclient/jsp/lib/'
 
