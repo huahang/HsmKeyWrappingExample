@@ -152,8 +152,8 @@ class HsmDemoHandler extends HttpServiceActor {
       }} ~ path("test4") { ctx => {
         val service = injector.getInstance(classOf[DemoService])
         val data = "hello, world!".getBytes(Charsets.UTF_8)
-        val keyGenerator = KeyGenerator.getInstance("DESede", "SunJCE")
-        keyGenerator.init(new SecureRandom)
+        val keyGenerator = KeyGenerator.getInstance("AES", "SunJCE")
+        keyGenerator.init(256, new SecureRandom)
         val secretKey = keyGenerator.generateKey()
 //        val encryptCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC")
 //        encryptCipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec("0102030405060708".getBytes))
