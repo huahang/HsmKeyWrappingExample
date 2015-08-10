@@ -159,6 +159,7 @@ class HsmDemoHandler extends HttpServiceActor {
         encryptCipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec("0102030405060708".getBytes))
         val cipher = encryptCipher.doFinal(data)
         val keyCipher = service.wrap("666_kek", secretKey)
+        secretKey.destroy()
         val unwrappedKey = service.unwrap("666_kek", keyCipher, secretKey.getAlgorithm, Cipher.SECRET_KEY)
         val decryptCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
         decryptCipher.init(Cipher.DECRYPT_MODE, unwrappedKey, new IvParameterSpec("0102030405060708".getBytes))
