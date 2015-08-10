@@ -170,6 +170,7 @@ class HsmDemoHandler extends HttpServiceActor {
 
         ctx.complete(
           "ok" + "\r\n" +
+            "key factory provider: " + keyFactory.getProvider.getClass.getCanonicalName + "\r\n" +
             "data string: " + dataString + "\r\n" +
             "secret key:" + "\r\n" + key2string(secretKey) + "\r\n" +
             "unwrapped key:" + "\r\n" + key2string(unwrappedKey) + "\r\n"
