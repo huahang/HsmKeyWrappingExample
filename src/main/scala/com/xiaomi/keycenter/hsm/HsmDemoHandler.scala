@@ -155,7 +155,7 @@ class HsmDemoHandler extends HttpServiceActor {
         val keyGenerator = KeyGenerator.getInstance("AES", "SunJCE")
         keyGenerator.init(128)
         val secretKey = keyGenerator.generateKey()
-        val encryptCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
+        val encryptCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC")
         encryptCipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec("0102030405060708".getBytes))
         val cipher = encryptCipher.doFinal(data)
         val keyCipher = service.wrap("666_kek", secretKey)
