@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream
 import java.security.{KeyFactory, Key, AlgorithmParameters, KeyPairGenerator, Signature, PrivateKey}
 import java.security.spec.ECGenParameterSpec
 import java.security.cert.CertificateFactory
-import javax.crypto.{SecretKeyFactory, KeyGenerator, Cipher}
+import javax.crypto.{KeyGenerator, SecretKeyFactory, Cipher}
 import javax.crypto.spec.{SecretKeySpec, IvParameterSpec}
 
 import com.google.common.base.Charsets
@@ -152,13 +152,9 @@ class HsmDemoHandler extends HttpServiceActor {
       }} ~ path("test4") { ctx => {
         val service = injector.getInstance(classOf[DemoService])
         val data = "hello, world!".getBytes(Charsets.UTF_8)
-        val keyFactory = SecretKeyFactory.getInstance("AES", "BC")
-        val secretKey = keyFactory.generateSecret(
-          new SecretKeySpec(
-            BaseEncoding.base16().decode("DC4EA62FEC88B2A5B1F87D76940CBB9125EC99CFB96DAA683036D8166AAEA760"),
-            "AES"
-          )
-        )
+        val keyGenerator = KeyGenerator.getInstance("AES", "SunJCE")
+        keyGenerator.init(128)
+        val secretKey = keyGenerator.generateKey()
         val encryptCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
         encryptCipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec("0102030405060708".getBytes))
         val cipher = encryptCipher.doFinal(data)
