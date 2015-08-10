@@ -152,7 +152,7 @@ class HsmDemoHandler extends HttpServiceActor {
       }} ~ path("test4") { ctx => {
         val service = injector.getInstance(classOf[DemoService])
         val data = "hello, world!".getBytes(Charsets.UTF_8)
-        val keyFactory = SecretKeyFactory.getInstance("AES")
+        val keyFactory = SecretKeyFactory.getInstance("AES", "BC")
         val secretKey = keyFactory.generateSecret(
           new SecretKeySpec(
             BaseEncoding.base16().decode("DC4EA62FEC88B2A5B1F87D76940CBB9125EC99CFB96DAA683036D8166AAEA760"),
