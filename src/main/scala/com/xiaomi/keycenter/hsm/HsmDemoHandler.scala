@@ -1,8 +1,8 @@
 package com.xiaomi.keycenter.hsm
 
 import java.io.ByteArrayInputStream
-import java.security.{SecureRandom, KeyFactory, Key, AlgorithmParameters, KeyPairGenerator, Signature, PrivateKey}
-import java.security.spec.ECGenParameterSpec
+import java.security.{Security, KeyPairGenerator, SecureRandom, KeyFactory, Key, AlgorithmParameters, Signature, PrivateKey}
+import java.security.spec.{ECParameterSpec, ECGenParameterSpec}
 import java.security.cert.CertificateFactory
 import javax.crypto.{KeyGenerator, SecretKeyFactory, Cipher}
 import javax.crypto.spec.{SecretKeySpec, IvParameterSpec}
@@ -174,6 +174,11 @@ class HsmDemoHandler extends HttpServiceActor {
       }} ~ path("test5") { ctx => {
         val service = injector.getInstance(classOf[DemoService])
         val data = "hello, world!".getBytes(Charsets.UTF_8)
+        val keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "BC")
+        // ECParameterSpec.
+        //keyPairGenerator.initialize(ecSpec, new SecureRandom())
+        //KeyPair pair = g.generateKeyPair()
+
 //        KeyPairGenerator.getInstance("", "")
 //        val keyGenerator = KeyGenerator.getInstance("AES", "SunJCE")
 //        keyGenerator.init(256, new SecureRandom)
@@ -188,7 +193,8 @@ class HsmDemoHandler extends HttpServiceActor {
 //        val dataString = new String(decryptCipher.doFinal(cipher), Charsets.UTF_8)
 
         ctx.complete(
-          "ok" + "\r\n" // +
+          "ok" + "\r\n" +
+            Security.getProvider("SunEC").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n"
 //            "key generator provider: " + keyGenerator.getProvider.getClass.getCanonicalName + "\r\n" +
 //            "data string: " + dataString + "\r\n" +
 //            "secret key:" + "\r\n" + key2string(secretKey) + "\r\n" +
