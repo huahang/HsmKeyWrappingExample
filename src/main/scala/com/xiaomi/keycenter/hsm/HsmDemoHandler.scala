@@ -194,7 +194,9 @@ class HsmDemoHandler extends HttpServiceActor {
 
         ctx.complete(
           "ok" + "\r\n" +
-            Security.getProvider("SunEC").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n"
+            Security.getProvider("SunEC").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
+            Security.getProvider("BC").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
+            Security.getProvider("LunaProvider").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n"
 //            "key generator provider: " + keyGenerator.getProvider.getClass.getCanonicalName + "\r\n" +
 //            "data string: " + dataString + "\r\n" +
 //            "secret key:" + "\r\n" + key2string(secretKey) + "\r\n" +
