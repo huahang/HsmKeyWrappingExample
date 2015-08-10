@@ -184,6 +184,16 @@ class HsmDemoHandler extends HttpServiceActor {
         val unwrappedPublicKey = service.unwrap("666_kek", publicKeyCipher, publicKey.getAlgorithm, Cipher.PUBLIC_KEY)
         val unwrappedPrivateKey = service.unwrap("666_kek", privateKeyCipher, privateKey.getAlgorithm, Cipher.PRIVATE_KEY)
 
+        val lunaSignature = Signature.getInstance("SHA256withECDSA", "LunaProvider")
+        lunaSignature.initSign(unwrappedPrivateKey.asInstanceOf[PrivateKey])
+        lunaSignature.update(data)
+        val sign = lunaSignature.sign()
+
+        val bcSignature = Signature.getInstance("SHA256withECDSA", "BC")
+        bcSignature.initVerify(publicKey)
+        bcSignature.update(data)
+        val good = bcSignature.verify(sign)
+
 //        KeyPairGenerator.getInstance("", "")
 //        val keyGenerator = KeyGenerator.getInstance("AES", "SunJCE")
 //        keyGenerator.init(256, new SecureRandom)
@@ -202,8 +212,8 @@ class HsmDemoHandler extends HttpServiceActor {
             Security.getProvider("SunEC").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
             Security.getProvider("BC").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
             Security.getProvider("LunaProvider").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
-//            "key generator provider: " + keyGenerator.getProvider.getClass.getCanonicalName + "\r\n" +
-//            "data string: " + dataString + "\r\n" +
+            "sign: " + BaseEncoding.base16().encode(sign) + "\r\n" +
+            "good: " + good + "\r\n" +
             "public key:" + "\r\n" + key2string(publicKey) + "\r\n" +
             "unwrapped public key:" + "\r\n" + key2string(unwrappedPublicKey) + "\r\n" +
             "private key:" + "\r\n" + key2string(privateKey) + "\r\n" +
