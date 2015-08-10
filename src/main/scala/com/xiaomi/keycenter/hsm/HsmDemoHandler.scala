@@ -175,9 +175,11 @@ class HsmDemoHandler extends HttpServiceActor {
         val service = injector.getInstance(classOf[DemoService])
         val data = "hello, world!".getBytes(Charsets.UTF_8)
         val keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "BC")
-        // ECParameterSpec.
-        //keyPairGenerator.initialize(ecSpec, new SecureRandom())
-        //KeyPair pair = g.generateKeyPair()
+        keyPairGenerator.initialize(new ECGenParameterSpec("secp256r1"))
+        val keyPair = keyPairGenerator.generateKeyPair()
+        val privateKey = keyPair.getPrivate
+        val keyCipher = service.wrap("666_kek", privateKey)
+        val unwrappedKey = service.unwrap("666_kek", keyCipher, privateKey.getAlgorithm, Cipher.PRIVATE_KEY)
 
 //        KeyPairGenerator.getInstance("", "")
 //        val keyGenerator = KeyGenerator.getInstance("AES", "SunJCE")
@@ -196,11 +198,11 @@ class HsmDemoHandler extends HttpServiceActor {
           "ok" + "\r\n" +
             Security.getProvider("SunEC").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
             Security.getProvider("BC").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
-            Security.getProvider("LunaProvider").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n"
+            Security.getProvider("LunaProvider").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
 //            "key generator provider: " + keyGenerator.getProvider.getClass.getCanonicalName + "\r\n" +
 //            "data string: " + dataString + "\r\n" +
-//            "secret key:" + "\r\n" + key2string(secretKey) + "\r\n" +
-//            "unwrapped key:" + "\r\n" + key2string(unwrappedKey) + "\r\n"
+            "private key:" + "\r\n" + key2string(privateKey) + "\r\n" +
+            "unwrapped key:" + "\r\n" + key2string(unwrappedKey) + "\r\n"
         )
       }}
     }
