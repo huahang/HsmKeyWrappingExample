@@ -179,9 +179,9 @@ class HsmDemoHandler extends HttpServiceActor {
         val keyPair = keyPairGenerator.generateKeyPair()
         val publicKey = keyPair.getPublic
         val privateKey = keyPair.getPrivate
-        val publicKeyCipher = service.wrap("666_kek", publicKey)
+        // val publicKeyCipher = service.wrap("666_kek", publicKey)
         val privateKeyCipher = service.wrap("666_kek", privateKey)
-        val unwrappedPublicKey = service.unwrap("666_kek", publicKeyCipher, publicKey.getAlgorithm, Cipher.PUBLIC_KEY)
+        // val unwrappedPublicKey = service.unwrap("666_kek", publicKeyCipher, publicKey.getAlgorithm, Cipher.PUBLIC_KEY)
         val unwrappedPrivateKey = service.unwrap("666_kek", privateKeyCipher, privateKey.getAlgorithm, Cipher.PRIVATE_KEY)
 
         val lunaSignature = Signature.getInstance("SHA256withECDSA", "LunaProvider")
@@ -215,7 +215,7 @@ class HsmDemoHandler extends HttpServiceActor {
             "sign: " + BaseEncoding.base16().encode(sign) + "\r\n" +
             "good: " + good + "\r\n" +
             "public key:" + "\r\n" + key2string(publicKey) + "\r\n" +
-            "unwrapped public key:" + "\r\n" + key2string(unwrappedPublicKey) + "\r\n" +
+            // "unwrapped public key:" + "\r\n" + key2string(unwrappedPublicKey) + "\r\n" +
             "private key:" + "\r\n" + key2string(privateKey) + "\r\n" +
             "unwrapped private key:" + "\r\n" + key2string(unwrappedPrivateKey) + "\r\n"
         )
