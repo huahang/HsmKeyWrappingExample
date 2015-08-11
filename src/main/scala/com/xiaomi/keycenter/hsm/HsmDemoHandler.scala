@@ -207,57 +207,59 @@ class HsmDemoHandler extends HttpServiceActor {
             "private key:" + "\r\n" + key2string(privateKey) + "\r\n" +
             "unwrapped private key:" + "\r\n" + key2string(unwrappedPrivateKey) + "\r\n"
         )
-      }} ~ path("test6") { ctx => {
-        val service = injector.getInstance(classOf[DemoService])
-        val data = new Array[Byte](1024)
-        val random = new Random
-        random.nextBytes(data)
-        val keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "LunaProvider")
-        keyPairGenerator.initialize(new ECGenParameterSpec("secp256r1"))
-        val keyPair = keyPairGenerator.generateKeyPair()
-        val publicKey = keyPair.getPublic
-        val privateKey = keyPair.getPrivate
+      }} ~ path("test6") {
+        parameter('size) { size => ctx => {
+          val service = injector.getInstance(classOf[DemoService])
+          val data = new Array[Byte](Integer.parseInt(size))
+          val random = new Random
+          random.nextBytes(data)
+          val keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "LunaProvider")
+          keyPairGenerator.initialize(new ECGenParameterSpec("secp256r1"))
+          val keyPair = keyPairGenerator.generateKeyPair()
+          val publicKey = keyPair.getPublic
+          val privateKey = keyPair.getPrivate
 
 
-        val lunaSignature = Signature.getInstance("SHA256withECDSA", "LunaProvider")
-        lunaSignature.initSign(privateKey.asInstanceOf[PrivateKey])
-        lunaSignature.update(data)
-        val sign = lunaSignature.sign()
-
-        lunaSignature.initVerify(publicKey)
-        lunaSignature.update(data)
-        val good = lunaSignature.verify(sign)
-
-        val t0 = System.currentTimeMillis()
-        (0 to 99).par.foreach(i => {
           val lunaSignature = Signature.getInstance("SHA256withECDSA", "LunaProvider")
           lunaSignature.initSign(privateKey.asInstanceOf[PrivateKey])
           lunaSignature.update(data)
-          lunaSignature.sign()
-        })
-        val t1 = System.currentTimeMillis()
+          val sign = lunaSignature.sign()
 
-        val t2 = System.currentTimeMillis()
-        (0 to 99).par.foreach(i => {
-          val lunaSignature = Signature.getInstance("SHA256withECDSA", "LunaProvider")
           lunaSignature.initVerify(publicKey)
           lunaSignature.update(data)
-          lunaSignature.verify(sign)
-        })
-        val t3 = System.currentTimeMillis()
+          val good = lunaSignature.verify(sign)
 
-        ctx.complete(
-          "ok" + "\r\n" +
-            Security.getProvider("SunEC").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
-            Security.getProvider("BC").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
-            Security.getProvider("LunaProvider").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
-            "sign: " + BaseEncoding.base16().encode(sign) + "\r\n" +
-            "good: " + good + "\r\n" +
-            "public key:" + "\r\n" + key2string(publicKey) + "\r\n" +
-            "private key:" + "\r\n" + key2string(privateKey) + "\r\n" +
-            "sign duration: " + (t1 - t0) + "\r\n" +
-            "verify duration: " + (t2 - t3) + "\r\n"
-        )
+          val t0 = System.currentTimeMillis()
+          (0 to 999).par.foreach(i => {
+            val lunaSignature = Signature.getInstance("SHA256withECDSA", "LunaProvider")
+            lunaSignature.initSign(privateKey.asInstanceOf[PrivateKey])
+            lunaSignature.update(data)
+            lunaSignature.sign()
+          })
+          val t1 = System.currentTimeMillis()
+
+          val t2 = System.currentTimeMillis()
+          (0 to 999).par.foreach(i => {
+            val lunaSignature = Signature.getInstance("SHA256withECDSA", "LunaProvider")
+            lunaSignature.initVerify(publicKey)
+            lunaSignature.update(data)
+            lunaSignature.verify(sign)
+          })
+          val t3 = System.currentTimeMillis()
+
+          ctx.complete(
+            "ok" + "\r\n" +
+              Security.getProvider("SunEC").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
+              Security.getProvider("BC").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
+              Security.getProvider("LunaProvider").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
+              "sign: " + BaseEncoding.base16().encode(sign) + "\r\n" +
+              "good: " + good + "\r\n" +
+              "public key:" + "\r\n" + key2string(publicKey) + "\r\n" +
+              "private key:" + "\r\n" + key2string(privateKey) + "\r\n" +
+              "sign duration: " + (t1 - t0) + "\r\n" +
+              "verify duration: " + (t3 - t2) + "\r\n"
+          )
+        }
       }}
     }
   }
