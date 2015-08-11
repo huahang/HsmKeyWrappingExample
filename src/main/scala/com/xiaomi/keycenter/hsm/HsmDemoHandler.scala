@@ -300,7 +300,7 @@ class HsmDemoHandler extends HttpServiceActor {
           )
         }}
       } ~ path("test8") {
-        parameter('size) { size => ctx => {
+        ctx => {
           val keyGenerator = KeyGenerator.getInstance("AES", "BC")
           keyGenerator.init(256)
           val key = keyGenerator.generateKey()
@@ -334,7 +334,7 @@ class HsmDemoHandler extends HttpServiceActor {
               "wrap key duration: " + (t1 - t0) + "\r\n" +
               "unwrap key duration: " + (t3 - t2) + "\r\n"
           )
-        }}
+        }
       }
     }
   }
