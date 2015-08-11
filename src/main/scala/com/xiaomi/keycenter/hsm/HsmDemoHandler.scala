@@ -311,19 +311,19 @@ class HsmDemoHandler extends HttpServiceActor {
 
           val t0 = System.currentTimeMillis()
           (0 to 999).foreach(i => {
-            val c = Cipher.getInstance("ECIES", "LunaProvider")
+            val c = Cipher.getInstance("RSA/ECB/PKCS1Padding", "LunaProvider")
             c.init(Cipher.WRAP_MODE, keyPair.getPublic)
             c.wrap(key)
           })
           val t1 = System.currentTimeMillis()
 
-          val c = Cipher.getInstance("ECIES", "LunaProvider")
+          val c = Cipher.getInstance("RSA/ECB/PKCS1Padding", "LunaProvider")
           c.init(Cipher.WRAP_MODE, keyPair.getPublic)
           val cipher = c.wrap(key)
 
           val t2 = System.currentTimeMillis()
           (0 to 999).foreach(i => {
-            val c = Cipher.getInstance("ECIES", "LunaProvider")
+            val c = Cipher.getInstance("RSA/ECB/PKCS1Padding", "LunaProvider")
             c.init(Cipher.UNWRAP_MODE, keyPair.getPrivate)
             c.unwrap(cipher, "AES", Cipher.SECRET_KEY)
           })
