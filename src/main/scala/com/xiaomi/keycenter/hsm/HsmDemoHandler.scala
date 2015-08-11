@@ -259,8 +259,47 @@ class HsmDemoHandler extends HttpServiceActor {
               "sign duration: " + (t1 - t0) + "\r\n" +
               "verify duration: " + (t3 - t2) + "\r\n"
           )
-        }
-      }}
+        }}
+      } ~ path("test7") {
+        parameter('size) { size => ctx => {
+          val data = new Array[Byte](Integer.parseInt(size))
+          val random = new Random
+          random.nextBytes(data)
+          val keyGenerator = KeyGenerator.getInstance("AES", "LunaProvider")
+          keyGenerator.init(256)
+          val key = keyGenerator.generateKey()
+
+          val keyGenerator2 = KeyGenerator.getInstance("AES", "BC")
+          keyGenerator2.init(256)
+          val key2 = keyGenerator2.generateKey()
+
+          val t0 = System.currentTimeMillis()
+          (0 to 999).par.foreach(i => {
+            val c = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
+            c.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(
+              LunaUtils.hexStringToByteArray("DEADD00D8BADF00DDEADBABED15EA5ED")
+            ))
+            c.doFinal(data)
+          })
+          val t1 = System.currentTimeMillis()
+
+          val t2 = System.currentTimeMillis()
+          (0 to 999).par.foreach(i => {
+            val c = Cipher.getInstance("AES/CBC/PKCS5Padding", "LunaProvider")
+            c.init(Cipher.WRAP_MODE, key, new IvParameterSpec(
+              LunaUtils.hexStringToByteArray("DEADD00D8BADF00DDEADBABED15EA5ED")
+            ))
+            c.wrap(key2)
+          })
+          val t3 = System.currentTimeMillis()
+
+          ctx.complete(
+            "ok" + "\r\n" +
+              "encrypt duration: " + (t1 - t0) + "\r\n" +
+              "wrap key duration: " + (t3 - t2) + "\r\n"
+          )
+        }}
+      }
     }
   }
 
