@@ -219,6 +219,14 @@ class HsmDemoHandler extends HttpServiceActor {
         val privateKey = keyPair.getPrivate
 
 
+        val lunaSignature = Signature.getInstance("SHA256withECDSA", "LunaProvider")
+        lunaSignature.initSign(privateKey.asInstanceOf[PrivateKey])
+        lunaSignature.update(data)
+        val sign = lunaSignature.sign()
+
+        lunaSignature.initVerify(publicKey)
+        lunaSignature.update(data)
+        val good = lunaSignature.verify(sign)
 
         val t0 = System.currentTimeMillis()
         (0 to 99).par.foreach(i => {
@@ -237,15 +245,6 @@ class HsmDemoHandler extends HttpServiceActor {
           lunaSignature.verify(sign)
         })
         val t3 = System.currentTimeMillis()
-
-        val lunaSignature = Signature.getInstance("SHA256withECDSA", "LunaProvider")
-        lunaSignature.initSign(privateKey.asInstanceOf[PrivateKey])
-        lunaSignature.update(data)
-        val sign = lunaSignature.sign()
-
-        lunaSignature.initVerify(publicKey)
-        lunaSignature.update(data)
-        val good = lunaSignature.verify(sign)
 
         ctx.complete(
           "ok" + "\r\n" +
