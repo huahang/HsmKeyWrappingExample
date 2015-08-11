@@ -301,24 +301,38 @@ class HsmDemoHandler extends HttpServiceActor {
         }}
       } ~ path("test8") {
         parameter('size) { size => ctx => {
-          val data = new Array[Byte](Integer.parseInt(size))
-          val random = new SecureRandom
-          random.nextBytes(data)
+          val keyGenerator = KeyGenerator.getInstance("AES", "BC")
+          keyGenerator.init(256)
+          val key = keyGenerator.generateKey()
 
-          val keyPairGenerator = KeyPairGenerator.getInstance("EC", "LunaProvider")
-          keyPairGenerator.initialize(new ECGenParameterSpec("secp256r1"))
+          val keyPairGenerator = KeyPairGenerator.getInstance("RSA", "LunaProvider")
+          keyPairGenerator.initialize(1024)
           val keyPair = keyPairGenerator.generateKeyPair()
 
+          val t0 = System.currentTimeMillis()
+          (0 to 999).foreach(i => {
+            val c = Cipher.getInstance("ECIES", "LunaProvider")
+            c.init(Cipher.WRAP_MODE, keyPair.getPublic)
+            c.wrap(key)
+          })
+          val t1 = System.currentTimeMillis()
+
           val c = Cipher.getInstance("ECIES", "LunaProvider")
-          c.init(Cipher.ENCRYPT_MODE, keyPair.getPublic)
-          val cipher = c.doFinal(data)
-          c.init(Cipher.DECRYPT_MODE, keyPair.getPrivate)
-          val raw = c.doFinal(cipher)
+          c.init(Cipher.WRAP_MODE, keyPair.getPublic)
+          val cipher = c.wrap(key)
+
+          val t2 = System.currentTimeMillis()
+          (0 to 999).foreach(i => {
+            val c = Cipher.getInstance("ECIES", "LunaProvider")
+            c.init(Cipher.UNWRAP_MODE, keyPair.getPrivate)
+            c.unwrap(cipher, "AES", Cipher.SECRET_KEY)
+          })
+          val t3 = System.currentTimeMillis()
 
           ctx.complete(
             "ok" + "\r\n" +
-              "data: " + "\r\n" + BaseEncoding.base16().encode(data) + "\r\n" +
-              "raw: " + "\r\n" + BaseEncoding.base16().encode(raw) + "\r\n"
+              "wrap key duration: " + (t1 - t0) + "\r\n" +
+              "unwrap key duration: " + (t3 - t2) + "\r\n"
           )
         }}
       }
