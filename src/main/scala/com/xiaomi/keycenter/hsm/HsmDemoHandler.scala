@@ -264,7 +264,7 @@ class HsmDemoHandler extends HttpServiceActor {
         parameter('size) { size => ctx => {
           val data = new Array[Byte](Integer.parseInt(size))
           val iv = new Array[Byte](16)
-          val random = new Random
+          val random = new SecureRandom
           random.nextBytes(data)
           random.nextBytes(iv)
           val keyGenerator = KeyGenerator.getInstance("AES", "LunaProvider")
@@ -284,15 +284,17 @@ class HsmDemoHandler extends HttpServiceActor {
           val t1 = System.currentTimeMillis()
 
           val t2 = System.currentTimeMillis()
-          (0 to 999).foreach(i => {
-            val c = Cipher.getInstance("AES/CBC/PKCS5Padding", "LunaProvider")
-            c.init(Cipher.WRAP_MODE, key, new IvParameterSpec(iv))
-            c.wrap(key2)
-          })
+//          (0 to 999).foreach(i => {
+//            val c = Cipher.getInstance("AES/CBC/PKCS5Padding", "LunaProvider")
+//            c.init(Cipher.WRAP_MODE, key, new IvParameterSpec(iv))
+//            c.wrap(key2)
+//          })
           val t3 = System.currentTimeMillis()
 
           ctx.complete(
             "ok" + "\r\n" +
+              "iv size: " +iv.length + "\r\n" +
+              "data size: " + data.length + "\r\n" +
               "encrypt duration: " + (t1 - t0) + "\r\n" +
               "wrap key duration: " + (t3 - t2) + "\r\n"
           )
