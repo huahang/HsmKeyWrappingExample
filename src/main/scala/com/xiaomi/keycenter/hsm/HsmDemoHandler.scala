@@ -276,7 +276,7 @@ class HsmDemoHandler extends HttpServiceActor {
           val key2 = keyGenerator2.generateKey()
 
           val t0 = System.currentTimeMillis()
-          (0 to 999).par.foreach(i => {
+          (0 to 999).foreach(i => {
             val c = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
             c.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv))
             c.doFinal(data)
@@ -284,7 +284,7 @@ class HsmDemoHandler extends HttpServiceActor {
           val t1 = System.currentTimeMillis()
 
           val t2 = System.currentTimeMillis()
-          (0 to 999).par.foreach(i => {
+          (0 to 999).foreach(i => {
             val c = Cipher.getInstance("AES/CBC/PKCS5Padding", "LunaProvider")
             c.init(Cipher.WRAP_MODE, key, new IvParameterSpec(iv))
             c.wrap(key2)
