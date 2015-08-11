@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream
 import java.security.{Security, KeyPairGenerator, SecureRandom, KeyFactory, Key, AlgorithmParameters, Signature, PrivateKey}
 import java.security.spec.{ECParameterSpec, ECGenParameterSpec}
 import java.security.cert.CertificateFactory
+import scala.util.Random
 import javax.crypto.{KeyGenerator, SecretKeyFactory, Cipher}
 import javax.crypto.spec.{SecretKeySpec, IvParameterSpec}
 
@@ -194,19 +195,6 @@ class HsmDemoHandler extends HttpServiceActor {
         bcSignature.update(data)
         val good = bcSignature.verify(sign)
 
-//        KeyPairGenerator.getInstance("", "")
-//        val keyGenerator = KeyGenerator.getInstance("AES", "SunJCE")
-//        keyGenerator.init(256, new SecureRandom)
-//        val secretKey = keyGenerator.generateKey()
-//        val encryptCipher = Cipher.getInstance("AES/GCM/NoPadding", "BC")
-//        encryptCipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec("0102030405060708".getBytes))
-//        val cipher = encryptCipher.doFinal(data)
-//        val keyCipher = service.wrap("666_kek", secretKey)
-//        val unwrappedKey = service.unwrap("666_kek", keyCipher, secretKey.getAlgorithm, Cipher.SECRET_KEY)
-//        val decryptCipher = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
-//        decryptCipher.init(Cipher.DECRYPT_MODE, unwrappedKey, new IvParameterSpec("0102030405060708".getBytes))
-//        val dataString = new String(decryptCipher.doFinal(cipher), Charsets.UTF_8)
-
         ctx.complete(
           "ok" + "\r\n" +
             Security.getProvider("SunEC").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
@@ -218,6 +206,55 @@ class HsmDemoHandler extends HttpServiceActor {
             // "unwrapped public key:" + "\r\n" + key2string(unwrappedPublicKey) + "\r\n" +
             "private key:" + "\r\n" + key2string(privateKey) + "\r\n" +
             "unwrapped private key:" + "\r\n" + key2string(unwrappedPrivateKey) + "\r\n"
+        )
+      }} ~ path("test6") { ctx => {
+        val service = injector.getInstance(classOf[DemoService])
+        val data = new Array[Byte](1024)
+        val random = new Random
+        random.nextBytes(data)
+        val keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "LunaProvider")
+        keyPairGenerator.initialize(new ECGenParameterSpec("secp256r1"))
+        val keyPair = keyPairGenerator.generateKeyPair()
+        val publicKey = keyPair.getPublic
+        val privateKey = keyPair.getPrivate
+
+        val lunaSignature = Signature.getInstance("SHA256withECDSA", "LunaProvider")
+
+        val t0 = System.currentTimeMillis()
+        (0 to 9999).foreach(i => {
+          lunaSignature.initSign(privateKey.asInstanceOf[PrivateKey])
+          lunaSignature.update(data)
+          lunaSignature.sign()
+        })
+        val t1 = System.currentTimeMillis()
+
+        lunaSignature.initSign(privateKey.asInstanceOf[PrivateKey])
+        lunaSignature.update(data)
+        val sign = lunaSignature.sign()
+
+        val t2 = System.currentTimeMillis()
+        (0 to 9999).foreach(i => {
+          lunaSignature.initVerify(publicKey)
+          lunaSignature.update(data)
+          lunaSignature.verify(sign)
+        })
+        val t3 = System.currentTimeMillis()
+
+        lunaSignature.initVerify(publicKey)
+        lunaSignature.update(data)
+        val good = lunaSignature.verify(sign)
+
+        ctx.complete(
+          "ok" + "\r\n" +
+            Security.getProvider("SunEC").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
+            Security.getProvider("BC").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
+            Security.getProvider("LunaProvider").getProperty("AlgorithmParameters.EC SupportedCurves") + "\r\n" +
+            "sign: " + BaseEncoding.base16().encode(sign) + "\r\n" +
+            "good: " + good + "\r\n" +
+            "public key:" + "\r\n" + key2string(publicKey) + "\r\n" +
+            "private key:" + "\r\n" + key2string(privateKey) + "\r\n" +
+            "sign duration: " + (t1 - t0) + "\r\n" +
+            "verify duration: " + (t2 - t3) + "\r\n"
         )
       }}
     }
