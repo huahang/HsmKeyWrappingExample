@@ -263,7 +263,7 @@ class HsmDemoHandler extends HttpServiceActor {
       } ~ path("test7") {
         parameter('size) { size => ctx => {
           val data = new Array[Byte](Integer.parseInt(size))
-          val iv = new Array[Byte](32)
+          val iv = new Array[Byte](16)
           val random = new Random
           random.nextBytes(data)
           random.nextBytes(iv)
