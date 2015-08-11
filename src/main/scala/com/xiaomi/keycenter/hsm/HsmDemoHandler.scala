@@ -1,7 +1,7 @@
 package com.xiaomi.keycenter.hsm
 
 import java.io.ByteArrayInputStream
-import java.security.{Security, KeyPairGenerator, SecureRandom, KeyFactory, Key, AlgorithmParameters, Signature, PrivateKey}
+import java.security.{KeyPairGenerator, Security, SecureRandom, KeyFactory, Key, AlgorithmParameters, Signature, PrivateKey}
 import java.security.spec.{ECParameterSpec, ECGenParameterSpec}
 import java.security.cert.CertificateFactory
 import scala.util.Random
@@ -297,6 +297,28 @@ class HsmDemoHandler extends HttpServiceActor {
               "data size: " + data.length + "\r\n" +
               "encrypt duration: " + (t1 - t0) + "\r\n" +
               "wrap key duration: " + (t3 - t2) + "\r\n"
+          )
+        }}
+      } ~ path("test8") {
+        parameter('size) { size => ctx => {
+          val data = new Array[Byte](Integer.parseInt(size))
+          val random = new SecureRandom
+          random.nextBytes(data)
+
+          val keyPairGenerator = KeyPairGenerator.getInstance("EC", "LunaProvider")
+          keyPairGenerator.initialize(new ECGenParameterSpec("secp256r1"))
+          val keyPair = keyPairGenerator.generateKeyPair()
+
+          val c = Cipher.getInstance("ECIES", "LunaProvider")
+          c.init(Cipher.ENCRYPT_MODE, keyPair.getPublic)
+          val cipher = c.doFinal(data)
+          c.init(Cipher.DECRYPT_MODE, keyPair.getPrivate)
+          val raw = c.doFinal(cipher)
+
+          ctx.complete(
+            "ok" + "\r\n" +
+              "data: " + "\r\n" + BaseEncoding.base16().encode(data) + "\r\n" +
+              "raw: " + "\r\n" + BaseEncoding.base16().encode(raw) + "\r\n"
           )
         }}
       }
