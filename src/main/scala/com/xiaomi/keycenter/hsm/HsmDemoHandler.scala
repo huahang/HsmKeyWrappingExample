@@ -277,7 +277,7 @@ class HsmDemoHandler extends HttpServiceActor {
           (0 to 999).par.foreach(i => {
             val c = Cipher.getInstance("AES/GCM/NoPadding", "LunaProvider")
             c.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(
-              LunaUtils.hexStringToByteArray("DEADD00D8BADF00DDEADBABED15EA5ED")
+              LunaUtils.hexStringToByteArray("DEADD00D8BADF00DDEADBABED15EA5EDDEADD00D8BADF00DDEADBABED15EA5ED")
             ))
             c.doFinal(data)
           })
@@ -287,7 +287,7 @@ class HsmDemoHandler extends HttpServiceActor {
           (0 to 999).par.foreach(i => {
             val c = Cipher.getInstance("AES/CBC/PKCS5Padding", "LunaProvider")
             c.init(Cipher.WRAP_MODE, key, new IvParameterSpec(
-              LunaUtils.hexStringToByteArray("DEADD00D8BADF00DDEADBABED15EA5ED")
+              LunaUtils.hexStringToByteArray("DEADD00D8BADF00DDEADBABED15EA5EDDEADD00D8BADF00DDEADBABED15EA5ED")
             ))
             c.wrap(key2)
           })
