@@ -284,11 +284,11 @@ class HsmDemoHandler extends HttpServiceActor {
           val t1 = System.currentTimeMillis()
 
           val t2 = System.currentTimeMillis()
-//          (0 to 999).foreach(i => {
-//            val c = Cipher.getInstance("AES/CBC/PKCS5Padding", "LunaProvider")
-//            c.init(Cipher.WRAP_MODE, key, new IvParameterSpec(iv))
-//            c.wrap(key2)
-//          })
+          (0 to 999).foreach(i => {
+            val c = Cipher.getInstance("AES/CBC/PKCS5Padding", "LunaProvider")
+            c.init(Cipher.WRAP_MODE, key, new IvParameterSpec(iv))
+            c.wrap(key2)
+          })
           val t3 = System.currentTimeMillis()
 
           ctx.complete(
