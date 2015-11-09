@@ -82,13 +82,8 @@ public class HsmDemoService implements DemoService {
             Security.addProvider(new com.safenetinc.luna.provider.LunaProvider());
             Security.addProvider(new BouncyCastleProvider());
             LunaSlotManager slotManager = LunaSlotManager.getInstance();
-            Properties prop = new Properties();
-            File propFile = new File(System.getProperty("user.home"), "partition.properties");
-            InputStream in = new FileInputStream(propFile);
-            prop.load(in);
-            in.close();
-            String partitionName = prop.getProperty("partitionName");
-            String partitionPass = prop.getProperty("partitionPass");
+            String partitionName = "mipar";
+            String partitionPass = "1qazXSW@";
             if (partitionName == null || partitionPass == null) {
                 System.err.println("Aborting, mandatory properties not set");
                 System.exit(-1);
